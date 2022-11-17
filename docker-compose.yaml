@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  transformer:
+    build:
+#      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - "./src/:/opt/project/src"
+      - "./dataset/:/opt/project/dataset"
+    tty: true
+
+
+
+
