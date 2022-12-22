@@ -1,5 +1,5 @@
-<mxfile host="app.diagrams.net" modified="2022-12-22T09:12:57.957Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36" etag="RyN25TeXV0PipaRg7Ty-" version="20.7.4" type="github">
-  <diagram id="dA8e0bMIt6unI36CABdZ" name="Page-1">
+<mxfile host="app.diagrams.net" modified="2022-12-22T09:18:39.068Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36" etag="B9Rcrj64kNorIJRMdaQw" version="20.7.4" type="github" pages="2">
+  <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
     <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -76,6 +76,14 @@
         <mxCell id="LVX9b2vcKdwv7nvfvKZe-2" value="" style="rounded=1;whiteSpace=wrap;html=1;gradientColor=default;fillColor=none;strokeColor=#00CC00;strokeWidth=2;" vertex="1" parent="1">
           <mxGeometry x="198" y="401" width="170" height="215" as="geometry" />
         </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="_Ab3EZK4yi8aj5dISS95" name="Detailed Architecture">
+    <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
       </root>
     </mxGraphModel>
   </diagram>
