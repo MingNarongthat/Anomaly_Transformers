@@ -20,7 +20,11 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 model.summary()
 
 # Load the Excel file into a Pandas DataFrame
+<<<<<<< HEAD
+df = pd.read_excel('/opt/project/dataset/result_predictions_token_flooding.xlsx')
+=======
 df = pd.read_excel('/opt/project/dataset/result_predictions_token_landslide.xlsx')
+>>>>>>> origin/main
 # Convert the string representation of the arrays to NumPy arrays of integers
 df['caption'] = df['caption'].apply(lambda x: np.array(x[1:-1].split(), dtype=int))
 
@@ -47,4 +51,8 @@ print(output.shape)
 df1 = pd.DataFrame(output)
 
 # Save the DataFrame to an xlsx file
+<<<<<<< HEAD
+df1.to_excel("/opt/project/dataset/result_unsupervise_flooding.xlsx", index=False)
+=======
 df1.to_excel("/opt/project/dataset/result_unsupervise_landslide.xlsx", index=False)
+>>>>>>> origin/main

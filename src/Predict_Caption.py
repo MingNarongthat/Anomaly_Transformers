@@ -5,7 +5,11 @@ from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecode
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Define the path to the folder containing the images
+<<<<<<< HEAD
+images_path = "/opt/project/dataset/Flooding/"
+=======
 images_path = "/opt/project/dataset/ResNet50/Testing/landslide/"
+>>>>>>> origin/main
 
 # Load the pre-trained image captioning model and tokenizer
 t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_normal')
@@ -41,7 +45,11 @@ for filename in os.listdir(images_path):
         results.append({"filename": filename, "caption": token_ids})
 
 # Define the maximum sequence length for padding
+<<<<<<< HEAD
+max_length = 25
+=======
 max_length = 20
+>>>>>>> origin/main
 
 # Pad the token_ids arrays in the results list
 for result in results:
@@ -51,6 +59,10 @@ for result in results:
 df = pd.DataFrame(results)
 
 # Save the DataFrame to an xlsx file
+<<<<<<< HEAD
+df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
+=======
 df.to_excel("/opt/project/dataset/result_predictions_token_landslide.xlsx", index=False)
+>>>>>>> origin/main
 
 
