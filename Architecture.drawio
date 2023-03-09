@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-03-09T08:45:29.100Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" etag="5Hg2oqD7FXn1ylPCw48H" version="20.8.23" type="github" pages="5">
+<mxfile host="app.diagrams.net" modified="2023-03-09T08:46:18.046Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" etag="-fsVNtGdRu1TwH9ysyeX" version="20.8.23" type="github" pages="5">
   <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
     <mxGraphModel dx="1242" dy="736" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -497,7 +497,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="UN-JJVudpA88NBkpbv_U" name="Page-3">
+  <diagram id="UN-JJVudpA88NBkpbv_U" name="Architecture Flow Classification">
     <mxGraphModel dx="806" dy="1067" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -756,7 +756,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="gr8dPuI2HjydTmM-jUo5" name="Page-5">
+  <diagram id="gr8dPuI2HjydTmM-jUo5" name="Proposed method">
     <mxGraphModel dx="1129" dy="727" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -870,7 +870,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="M6z-Q1-bMfO3tweg9e-K" name="Page-6">
+  <diagram id="M6z-Q1-bMfO3tweg9e-K" name="Anomaly Architecture Cluster">
     <mxGraphModel dx="611" dy="941" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
