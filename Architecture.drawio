@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-03-10T08:42:01.832Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" etag="OqbhXLu2LVPX2FeMfGGt" version="20.8.23" type="github" pages="6">
+<mxfile host="app.diagrams.net" modified="2023-03-10T09:57:14.076Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" etag="4IUixH3etiy0xn6OTrue" version="20.8.23" type="github" pages="6">
   <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
     <mxGraphModel dx="1434" dy="776" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -498,7 +498,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="UN-JJVudpA88NBkpbv_U" name="Architecture Flow Classification">
-    <mxGraphModel dx="1062" dy="1035" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1062" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -757,15 +757,10 @@
     </mxGraphModel>
   </diagram>
   <diagram id="gr8dPuI2HjydTmM-jUo5" name="Proposed method">
-    <mxGraphModel dx="1304" dy="705" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1304" dy="658" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="R6a93b5iyHuoFNsRdu50-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" edge="1" parent="1" target="R6a93b5iyHuoFNsRdu50-2">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="216" y="140" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="R6a93b5iyHuoFNsRdu50-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" edge="1" parent="1" source="R6a93b5iyHuoFNsRdu50-2" target="R6a93b5iyHuoFNsRdu50-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -807,11 +802,6 @@
         </mxCell>
         <mxCell id="R6a93b5iyHuoFNsRdu50-19" value="Output" style="rounded=0;whiteSpace=wrap;html=1;fontSize=17;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
           <mxGeometry x="596" y="206" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="R6a93b5iyHuoFNsRdu50-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" edge="1" parent="1" target="R6a93b5iyHuoFNsRdu50-27">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="216" y="340" as="sourcePoint" />
-          </mxGeometry>
         </mxCell>
         <mxCell id="R6a93b5iyHuoFNsRdu50-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" edge="1" parent="1" source="R6a93b5iyHuoFNsRdu50-27" target="R6a93b5iyHuoFNsRdu50-28">
           <mxGeometry relative="1" as="geometry" />
@@ -866,6 +856,25 @@
         </mxCell>
         <mxCell id="R6a93b5iyHuoFNsRdu50-8" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=17;fillColor=#CCFFE6;" vertex="1" parent="1">
           <mxGeometry x="626" y="167.5" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="2gqe6NEIy6q4FMbNZHvc-3" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;sketch=0;jumpStyle=none;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;shadow=0;labelBackgroundColor=default;strokeColor=default;fontFamily=Helvetica;fontSize=14;fontColor=#FFFFFF;endArrow=classic;" edge="1" parent="1" target="R6a93b5iyHuoFNsRdu50-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="140" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2gqe6NEIy6q4FMbNZHvc-4" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;sketch=0;jumpStyle=none;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;shadow=0;labelBackgroundColor=default;strokeColor=default;fontFamily=Helvetica;fontSize=14;fontColor=#FFFFFF;endArrow=classic;" edge="1" parent="1" target="R6a93b5iyHuoFNsRdu50-27">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="340.0000000000001" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YsrUYtYn3mVd60WO23BF-1" value="&quot; rock falls from the cliff &quot;&lt;br style=&quot;font-size: 12px;&quot;&gt;&quot; the city near the mountain &quot;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
+          <mxGeometry x="332.5" y="368.75" width="165" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="8g-qldLH9RJWStLklimX-1" value="Explain the surrounding detail of objects&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=17;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
+          <mxGeometry x="255" y="400" width="320" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="8g-qldLH9RJWStLklimX-2" value="Extract the features based on pixel" style="rounded=0;whiteSpace=wrap;html=1;fontSize=17;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
+          <mxGeometry x="255" y="170" width="320" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -1185,7 +1194,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="Anomaly object detection" id="r0OuFRq5tEqchMLkwcLL">
-    <mxGraphModel dx="943" dy="970" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="943" dy="905" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="3t7CtdQJ4Wv_MrhBsDJM-0" />
         <mxCell id="3t7CtdQJ4Wv_MrhBsDJM-1" parent="3t7CtdQJ4Wv_MrhBsDJM-0" />
