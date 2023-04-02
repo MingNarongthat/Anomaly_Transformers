@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-03-14T07:02:20.275Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="iBCKSs0GKPPsn3BtgFna" version="21.0.6" type="github" pages="7">
+<mxfile host="app.diagrams.net" modified="2023-04-02T16:01:38.738Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="CojyhpB5ws7Hm8MpJb_T" version="21.1.2" type="github" pages="7">
   <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
-    <mxGraphModel dx="1434" dy="724" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -80,7 +80,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="_Ab3EZK4yi8aj5dISS95" name="Detailed Architecture">
-    <mxGraphModel dx="1434" dy="724" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -498,7 +498,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="UN-JJVudpA88NBkpbv_U" name="Architecture Flow Classification">
-    <mxGraphModel dx="659" dy="749" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="392" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -654,7 +654,7 @@
           <mxGeometry x="1273.75" y="560" width="490" height="40" as="geometry" />
         </mxCell>
         <mxCell id="WAKH5KXyo1g0QLqZOvHR-1" value="Input" style="rounded=0;whiteSpace=wrap;html=1;fontSize=17;fillColor=none;strokeColor=none;align=center;" parent="1" vertex="1">
-          <mxGeometry x="1834.48" y="640" width="90" height="30" as="geometry" />
+          <mxGeometry x="1830" y="600" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="WAKH5KXyo1g0QLqZOvHR-33" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=0;sketch=0;jumpStyle=none;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.212;entryY=0.527;entryDx=0;entryDy=0;entryPerimeter=0;shadow=0;labelBackgroundColor=default;strokeColor=default;fontFamily=Helvetica;fontSize=16;fontColor=default;endArrow=classic;" parent="1" source="WAKH5KXyo1g0QLqZOvHR-2" target="WAKH5KXyo1g0QLqZOvHR-11" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -744,7 +744,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="gr8dPuI2HjydTmM-jUo5" name="Proposed method">
-    <mxGraphModel dx="1434" dy="712" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -873,7 +873,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="M6z-Q1-bMfO3tweg9e-K" name="Anomaly Architecture Cluster">
-    <mxGraphModel dx="584" dy="724" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="392" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1187,7 +1187,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="Anomaly object detection" id="r0OuFRq5tEqchMLkwcLL">
-    <mxGraphModel dx="584" dy="724" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="392" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="3t7CtdQJ4Wv_MrhBsDJM-0" />
         <mxCell id="3t7CtdQJ4Wv_MrhBsDJM-1" parent="3t7CtdQJ4Wv_MrhBsDJM-0" />
@@ -1491,7 +1491,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="kuE6Ytg4BvCrhxrS22JJ" name="Anomaly detection combined">
-    <mxGraphModel dx="1434" dy="724" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1242" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
