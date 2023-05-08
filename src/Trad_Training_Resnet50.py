@@ -1,8 +1,3 @@
-# import numpy as np
-# import pandas as pd
-
-# import cv2
-# import os
 import tensorflow as tf
 print(tf.__version__)
 from tensorflow.keras.applications import ResNet50
@@ -20,7 +15,7 @@ NUM_CLASSES = 2
 # Fixed for normal and abnormal color images
 CHANNELS = 3
 
-WEIGHT_NAME = '/opt/project/tmp/ResNet50/best.hdf5'
+WEIGHT_NAME = '/opt/project/tmp/ResNet50/bestscratch.hdf5'
 IMAGE_RESIZE = 512  # 224
 RESNET50_POOLING_AVERAGE = 'max'
 DENSE_LAYER_ACTIVATION = 'softmax'
@@ -50,13 +45,15 @@ model = Sequential()
 
 # 1st layer as the lumpsum weights from resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5
 # NOTE that this layer will be set below as NOT TRAINABLE, i.e., use it as is
-model.add(ResNet50(include_top=False, pooling=RESNET50_POOLING_AVERAGE, classes=NUM_CLASSES, weights='imagenet'))
+model.add(ResNet50(include_top=False, pooling=RESNET50_POOLING_AVERAGE, classes=NUM_CLASSES, weights=None))
+# model.add(ResNet50(include_top=False, pooling=RESNET50_POOLING_AVERAGE, classes=NUM_CLASSES, weights='imagenet'))
 
 model.add(Dense(128, activation='tanh'))
 # 2nd layer as Dense for 2-class classification, i.e., dog or cat using SoftMax activation
 model.add(Dense(NUM_CLASSES, activation=DENSE_LAYER_ACTIVATION))
 
 # Say not to train first layer (ResNet) model as it is already trained
+
 model.layers[0].trainable = False
 
 model.summary()

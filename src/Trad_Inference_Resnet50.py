@@ -2,16 +2,21 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
 import numpy as np
+import pandas as pd
 import os
 
-WEIGHT_NAME = '/opt/project/tmp/ResNet50/best.hdf5'
+WEIGHT_NAME = '/opt/project/tmp/ResNet50/bestscratch.hdf5'
 images_path = "/opt/project/dataset/ResNet50/Testing/landslide/"
 IMAGE_RESIZE = 512
 
 model = load_model(WEIGHT_NAME)
 
 class_labels = ['landslide', 'normal']
+# create a new dataframe to store the predictions
+df_output = pd.DataFrame(columns=['Prediction', 'Label'])
 
+count_landslide = 0
+count_normal = 0
 # iterate through all the images in the directory
 for filename in os.listdir(images_path):
     if filename.endswith(".jpg"): # filter only image files
@@ -22,7 +27,15 @@ for filename in os.listdir(images_path):
         preds = model.predict(x)
         # find the index of the class with maximum score
         pred = np.argmax(preds, axis=-1)
-        # print the label of the class with maximum score
-        print("Image {} is classified as {}".format(filename, class_labels[pred[0]]))
-        # print(preds)
+        if pred[0] == 0:
+            count_landslide = count_landslide + 1
+        else:
+            count_normal = count_normal + 1
 
+        df_output = df_output.append({'Prediction': pred[0], 'Label': 0}, ignore_index=True)
+        # print the label of the class with maximum score
+        # print("Image {} is classified as {}".format(filename, class_labels[pred[0]]))
+        # print(preds)
+print("prediction landslide is {}".format(count_landslide))
+print("prediction normal is {}".format(count_normal))
+df_output.to_excel('/opt/project/dataset/result_resnet50scratch_landslide.xlsx', index=False)
