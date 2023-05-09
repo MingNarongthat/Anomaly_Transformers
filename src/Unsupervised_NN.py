@@ -4,6 +4,10 @@ import numpy as np
 from tensorflow import keras
 from keras.layers import LSTM, Dense, Dropout, Activation
 from keras.models import Sequential, load_model, save_model
+<<<<<<< HEAD
+from keras.layers import Conv1D, MaxPooling1D, Flatten
+=======
+>>>>>>> 4fc41bf (updated code version)
 
 
 # Define the input shape
@@ -29,6 +33,36 @@ def dense_model_lowunit():
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
+<<<<<<< HEAD
+
+# lstm model
+def lstm_dense():
+    model = Sequential()
+    model.add(LSTM(units=32, input_shape=input_shape, return_sequences=True))
+    model.add(LSTM(units=8, activation='relu'))
+    model.add(Dense(units=4, activation='relu'))
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
+    return model
+
+# convolution neural network
+def conv_model():
+    model = Sequential()
+    model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=input_shape, padding='same'))
+    model.add(MaxPooling1D(pool_size=1))
+    model.add(Conv1D(filters=32, kernel_size=3, activation='relu', padding='same'))
+    model.add(MaxPooling1D(pool_size=1))
+    model.add(Flatten())
+    model.add(Dense(units=16, activation='sigmoid'))
+    model.add(Dense(units=4, activation='relu'))
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
+    return model
+
+
+# Load the Excel file into a Pandas DataFrame
+df = pd.read_excel('/opt/project/dataset/result_predictions_token_landslide.xlsx')
+=======
 
 # lstm model
 def lstm_dense():
@@ -42,6 +76,7 @@ def lstm_dense():
 
 # Load the Excel file into a Pandas DataFrame
 df = pd.read_excel('/opt/project/dataset/result_predictions_token_flooding.xlsx')
+>>>>>>> 4fc41bf (updated code version)
 
 # Convert the string representation of the arrays to NumPy arrays of integers
 df['caption'] = df['caption'].apply(lambda x: np.array(x[1:-1].split(), dtype=int))
@@ -61,7 +96,11 @@ input_data = df.iloc[:, :25].values
 input_data = np.reshape(input_data, (df.shape[0], 1, 25))
 
 # Predict the output for the input data using the model
+<<<<<<< HEAD
+model = conv_model()
+=======
 model = lstm_dense()
+>>>>>>> 4fc41bf (updated code version)
 output = model.predict(input_data)
 output = np.reshape(output, (df.shape[0], 4))
 
@@ -73,5 +112,9 @@ df_output = pd.DataFrame(output)
 print(df_output)
 
 # Save the DataFrame to an xlsx file
+<<<<<<< HEAD
+df_output.to_excel("/opt/project/dataset/result_Conv1Dunsupervise_landslide.xlsx", index=False)
+=======
 df_output.to_excel("/opt/project/dataset/result_unsupervise_flooding.xlsx", index=False)
+>>>>>>> 4fc41bf (updated code version)
 
