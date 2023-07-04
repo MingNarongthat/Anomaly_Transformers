@@ -31,8 +31,8 @@ import json
 import pandas as pd
 
 # read data from excel
-filename_input = '/opt/project/dataset/caption_dataset_normal.xlsx'
-filename_output = '/opt/project/dataset/caption_dataset_normal.json'
+filename_input = '/opt/project/dataset/caption_dataset_normal_v1.2.xlsx'
+filename_output = '/opt/project/dataset/caption_dataset_normal_v1.2.json'
 
 df = pd.read_excel(filename_input)
 

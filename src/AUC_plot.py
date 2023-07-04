@@ -19,10 +19,11 @@ fpr2, tpr2, threshold2s = roc_curve(df2["Label"], df2["Prediction"])
 fpr3, tpr3, threshold3s = roc_curve(df3["Label"], df3["Prediction"])
 
 # Plot the ROC curve
-plt.plot(fpr, tpr, label="AUC Our = %.2f" % auc_score)
-plt.plot(fpr2, tpr2, label="AUC ResNet50 from fine tune = %.2f" % auc_score2)
-plt.plot(fpr3, tpr3, label="AUC ResNet50 from scratch = %.2f" % auc_score3)
-plt.plot([0, 1], [0, 1], "k--")
+plt.plot(fpr, tpr, 'red', label="AUC Our = %.2f" % auc_score, linewidth=2.5)
+plt.plot(fpr3, tpr3, 'orange', label="AUC ResNet50 from scratch = %.2f" % auc_score3)
+plt.plot(fpr2, tpr2, 'green', label="AUC ResNet50 from fine tune = %.2f" % auc_score2)
+
+plt.plot([0, 1], [0, 1], "k-.", linewidth=0.5)
 plt.xlim([0, 1])
 plt.ylim([0, 1])
 plt.xlabel("False Positive Rate")

@@ -15,6 +15,13 @@ from transformers import VisionEncoderDecoderModel, AutoTokenizer, ViTFeatureExt
 #Training
 from transformers import Trainer, TrainingArguments
 
+import datetime
+import csv
+
+# Get current date and time
+start_time = datetime.datetime.now()
+start_time_str = start_time.strftime("%Y-%m-%d %H:%M:%S")
+
 # If there's a GPU available
 if torch.cuda.is_available():
 
@@ -40,7 +47,7 @@ feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 # Read json file containing the image name and captioning
-with open("/opt/project/dataset/caption_dataset_normal.json", 'r') as f:
+with open("/opt/project/dataset/caption_dataset_normal_v1.2.json", 'r') as f:
     datastore = json.load(f)
 
 # Preparing training and testing set
@@ -77,11 +84,11 @@ model.to(device)
 model.config.decoder_start_token_id = tokenizer.cls_token_id
 model.config.pad_token_id = tokenizer.pad_token_id
 # make sure vocab size is set correctly
-model.config.vocab_size = 50265  # 30522
+model.config.vocab_size = 30522  #  50265
 
 # set beam search parameters
 model.config.eos_token_id = tokenizer.sep_token_id
-model.config.max_length = 20
+model.config.max_length = 30
 model.config.early_stopping = True
 model.config.no_repeat_ngram_size = 3
 model.config.length_penalty = 2.0
@@ -153,8 +160,7 @@ training_args = TrainingArguments(
     logging_steps=1024,
     save_steps=2048,
     warmup_steps=1024,
-    #max_steps=1500, # delete for full training
-    num_train_epochs=5, #TRAIN_EPOCHS
+    num_train_epochs=10,  # TRAIN_EPOCHS
     overwrite_output_dir=True,
     save_total_limit=1,
 )
@@ -171,4 +177,16 @@ trainer = Trainer(
 )
 # Fine-tune the model, training and evaluating on the train dataset ----------------------------------------------------
 trainer.train()
-trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_normal')
+trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_normal_v1.2')
+
+# Get finish date and time
+end_time = datetime.datetime.now()
+end_time_str = end_time.strftime("%Y-%m-%d %H:%M:%S")
+
+# Save start and end time to a CSV file
+csv_file = "/opt/project/tmp/training_log.csv"
+with open(csv_file, "a") as file:
+    writer = csv.writer(file)
+    writer.writerow(["Script Name", "Start Time", "End Time"])
+    writer.writerow(["VED_Training.py", start_time_str, end_time_str])
+

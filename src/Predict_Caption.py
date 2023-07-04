@@ -6,10 +6,9 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Define the path to the folder containing the images
 
-images_path = "/opt/project/dataset/Flooding/"
+# images_path = "/opt/project/dataset/Flooding/"
 
-images_path = "/opt/project/dataset/ResNet50/Testing/landslide/"
-
+images_path = "/opt/project/dataset/Testing_LostAndFound/"
 
 # Load the pre-trained image captioning model and tokenizer
 t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_normal')
@@ -35,34 +34,30 @@ for filename in os.listdir(images_path):
 
         # encode text to tensor
         tokenized_caption = tokenizer.encode(caption_without_special_tokens,
-                                         truncation=True,
-                                         padding=True,
-                                         return_tensors="tf")
+                                             truncation=True,
+                                             padding=True,
+                                             return_tensors="tf")
         # extract token array
         token_ids = tokenized_caption.numpy()[0]
 
         # Add the filename and caption to the results list
-        results.append({"filename": filename, "caption": token_ids})
+        results.append({"filename": filename, "caption": caption})
 
 # Define the maximum sequence length for padding
 
-max_length = 25
+# max_length = 25
 
 max_length = 20
 
-
 # Pad the token_ids arrays in the results list
-for result in results:
-    result["caption"] = pad_sequences([result["caption"]], maxlen=max_length, padding="post")[0]
+# for result in results:
+#     result["caption"] = pad_sequences([result["caption"]], max_len=max_length, padding="post")[0]
 
 # Create a DataFrame from the results list
 df = pd.DataFrame(results)
 
 # Save the DataFrame to an xlsx file
 
-df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
+# df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
 
-df.to_excel("/opt/project/dataset/result_predictions_token_landslide.xlsx", index=False)
-
-
-
+df.to_excel("/opt/project/dataset/result_predictions_token_LandF.xlsx", index=False)

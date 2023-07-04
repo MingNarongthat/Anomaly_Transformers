@@ -11,11 +11,7 @@ import seaborn as sns
 from sklearn.manifold import TSNE
 
 # Load your data and labels
-<<<<<<< HEAD
 data = np.loadtxt('/opt/project/dataset/dataConv.csv', delimiter=',')
-=======
-data = np.loadtxt('/opt/project/dataset/data_pad10.csv', delimiter=',')
->>>>>>> 4fc41bf (updated code version)
 labels = np.loadtxt('/opt/project/dataset/labels.csv', delimiter=',')
 
 # Normalize the data
@@ -84,11 +80,7 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title('Confusion Matrix')
 plt.xlabel('Predicted Labels')
 plt.ylabel('True Labels')
-<<<<<<< HEAD
 plt.savefig('/opt/project/tmp/Cluster_confusion_plot_Conv.jpg')
-=======
-plt.savefig('/opt/project/tmp/Cluster_confusion_plot_nofeatureselection_10pad.jpg')
->>>>>>> 4fc41bf (updated code version)
 plt.close()
 
 # Use t-SNE to project the encoded data points to a 2D space
@@ -112,10 +104,6 @@ plt.title('t-SNE plot with True and Predicted Clusters')
 plt.xlabel('t-SNE Dimension 1')
 plt.ylabel('t-SNE Dimension 2')
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-<<<<<<< HEAD
 plt.savefig('/opt/project/tmp/Cluster_tSNE2_plot_Conv.jpg', bbox_inches='tight')
-=======
-plt.savefig('/opt/project/tmp/Cluster_tSNE2_plot_nofeatureselection_10pad.jpg', bbox_inches='tight')
->>>>>>> 4fc41bf (updated code version)
 plt.close()
 
