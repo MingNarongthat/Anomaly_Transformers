@@ -2,8 +2,8 @@ import json
 import pandas as pd
 
 # read data from excel
-filename_input = '/opt/project/dataset/sentence_dataset.xlsx'
-filename_output = '/opt/project/dataset/sentense_dataset_all.json'
+filename_input = '/opt/project/dataset/sentence_datasetV2.xlsx'
+filename_output = '/opt/project/dataset/sentense_dataset_allV2.json'
 
 df = pd.read_excel(filename_input)
 # df_result = pd.DataFrame(columns=['Sentence', 'Label'])

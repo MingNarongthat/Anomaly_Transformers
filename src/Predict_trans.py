@@ -27,11 +27,12 @@ import tensorflow as tf
 import pandas as pd
 
 # read the input sentences from the XLSX file
-df_input = pd.read_excel('/opt/project/dataset/result_predictions_caption_landslide.xlsx')
+df_input = pd.read_excel('/opt/project/dataset/result_predictions_token_landslideV1.2.xlsx')
 
 # initialize the tokenizer and loaded model
 tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
-loaded_model = TFDistilBertForSequenceClassification.from_pretrained("/opt/project/tmp/sentiment_custom_model")
+# tokenizer = DistilBertTokenizerFast.from_pretrained('bert-base-uncased')
+loaded_model = TFDistilBertForSequenceClassification.from_pretrained("/opt/project/tmp/sentiment_custom_modelV2")
 
 # create a new dataframe to store the predictions
 df_output = pd.DataFrame(columns=['Sentence', 'Sentiment'])
@@ -58,5 +59,5 @@ for sentence in df_input['caption']:
     df_output = df_output.append({'Sentence': sentence, 'Sentiment': sentiment}, ignore_index=True)
 
 # write the output dataframe to an XLSX file
-df_output.to_excel('/opt/project/dataset/result_predictions_classification_landslide.xlsx', index=False)
+df_output.to_excel('/opt/project/dataset/result_predictions_classification_landslideV2.xlsx', index=False)
 

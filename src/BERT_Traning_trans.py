@@ -8,7 +8,7 @@ import json
 
 training_size = 200
 
-with open("/opt/project/dataset/sentense_dataset_all.json", 'r') as f:
+with open("/opt/project/dataset/sentense_dataset_allV2.json", 'r') as f:
     datastore = json.load(f)
 
 sentences = []
@@ -61,4 +61,4 @@ model.fit(train_dataset.shuffle(30).batch(16),
           epochs=100,
           batch_size=16,
           validation_data=val_dataset.shuffle(10).batch(16))
-model.save_pretrained("/opt/project/tmp/sentiment_custom_model")
+model.save_pretrained("/opt/project/tmp/sentiment_custom_modelV2")
