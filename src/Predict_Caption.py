@@ -1,20 +1,22 @@
 import os
 import pandas as pd
 from PIL import Image
-from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel
+from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, ViTImageProcessor
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Define the path to the folder containing the images
 
 # images_path = "/opt/project/dataset/Flooding/"
 
-images_path = "/opt/project/dataset/ResNet50/Testing/landslide"
+images_path = "/opt/project/dataset/ResNet50/Testing/normal/"
 
 # Load the pre-trained image captioning model and tokenizer
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
-feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
-tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
+# feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+# tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+# print(t)
 # Create an empty list to store the results
 results = []
 
@@ -47,7 +49,7 @@ for filename in os.listdir(images_path):
 
 # max_length = 25
 
-max_length = 20
+max_length = 30
 
 # Pad the token_ids arrays in the results list
 # for result in results:
@@ -60,4 +62,4 @@ df = pd.DataFrame(results)
 
 # df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
 
-df.to_excel("/opt/project/dataset/result_predictions_token_landslideV1.2.xlsx", index=False)
+df.to_excel("/opt/project/dataset/experiment1_normal_VEDpretrain.xlsx", index=False)
