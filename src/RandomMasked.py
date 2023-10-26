@@ -23,6 +23,7 @@ def remove_random_windows(image_path, window_size, num_windows_to_remove):
     img.save('modified_image.jpg')
     img.show()
 
+# for running module
 if __name__ == "__main__":
     image_path = 'path_to_your_image.jpg'  # Replace with the actual path of your image
     window_size = 32
