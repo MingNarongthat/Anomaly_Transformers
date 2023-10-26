@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-10-26T03:10:45.899Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" etag="hQUgHd1SBiDOUh5XtH8D" version="22.0.8" type="github" pages="8">
+<mxfile host="app.diagrams.net" modified="2023-10-26T03:11:30.138Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" etag="-h_oqbjicquuHsXBDFrM" version="22.0.8" type="github" pages="8">
   <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
     <mxGraphModel dx="1194" dy="863" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -1570,14 +1570,14 @@
         <mxCell id="6MmEdC0_tBsU4l93nz5g-11" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.star;fillColor=#FFD966;" vertex="1" parent="1">
           <mxGeometry x="1641" y="372.5" width="26" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="6MmEdC0_tBsU4l93nz5g-35" value="Training" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="1576.25" y="-180" width="60" height="30" as="geometry" />
+        <mxCell id="6MmEdC0_tBsU4l93nz5g-35" value="Training" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=5;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="960" y="-190" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6MmEdC0_tBsU4l93nz5g-36" value="Image focused captioning on target objective" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontStyle=5;fontSize=16;" vertex="1" parent="1">
-          <mxGeometry x="1290" y="-260" width="602" height="40" as="geometry" />
+          <mxGeometry x="1410" y="-260" width="602" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="6MmEdC0_tBsU4l93nz5g-37" value="Inference" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="1588" y="560" width="60" height="30" as="geometry" />
+        <mxCell id="6MmEdC0_tBsU4l93nz5g-37" value="Inference" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=5;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="960" y="570" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6MmEdC0_tBsU4l93nz5g-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="6MmEdC0_tBsU4l93nz5g-38" target="6MmEdC0_tBsU4l93nz5g-49">
           <mxGeometry relative="1" as="geometry" />
