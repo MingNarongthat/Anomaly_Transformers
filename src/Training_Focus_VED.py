@@ -5,6 +5,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import torch.nn as nn
+import torchvision.models as models
+
+class AnchorBoxPredictor(nn.Module):
+    def __init__(self, feature_size, num_anchors):
+        super(AnchorBoxPredictor, self).__init__()
+        self.conv = nn.Conv2d(feature_size, num_anchors * 4, 1)
+        self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
+        self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
+
+    def forward(self, x):
+        # Apply a 1x1 conv to predict the 4 values tx, ty, tw, th for each anchor
+        out = self.conv(x)
+
+        # Split the output into the tx, ty (which we pass through a sigmoid) and tw, th (which we pass through a tanh)
+        tx_ty, tw_th = torch.split(out, 2, 1)
+        tx_ty = self.sigmoid(tx_ty)
+        tw_th = self.tanh(tw_th)
+
+        return torch.cat([tx_ty, tw_th], 1)
 
 # Load the image
 image_path = '/opt/project/dataset/Image/Testing/anomaly/Experiment VED with chatGPT.jpg'
@@ -12,17 +32,11 @@ image = Image.open(image_path)
 
 # Define the transformation to convert image to tensor
 transform_to_tensor = transforms.ToTensor()
-
-# Apply the transformation to convert image to tensor
 image_tensor = transform_to_tensor(image)
 
 # Load the VGG16 model
 vgg16_model = models.vgg16(pretrained=True).features
-
-# Add a batch dimension with unsqueeze
 image_batch = image_tensor.unsqueeze(0)  # The shape becomes [1, C, H, W]
-
-# Set the model to evaluation mode
 vgg16_model.eval()
 
 # Process the image through the VGG-16 model
