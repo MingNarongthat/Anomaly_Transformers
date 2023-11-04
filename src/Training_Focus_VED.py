@@ -56,6 +56,8 @@ patch_height = conv_height // 3
 
 # Generate anchor boxes for each patch
 k = 3  # Number of anchor boxes
+# Define the feature size and the number of anchors per spatial location
+feature_size = 512  # This is the number of channels in the VGG-16 feature map
 anchor_boxes = []
 
 for i in range(3):  # for each row of patches

@@ -1,5 +1,4 @@
 import tensorflow as tf
-print(tf.__version__)
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
