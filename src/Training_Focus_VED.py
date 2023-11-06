@@ -51,7 +51,7 @@ original_image = Image.open(image_path)
 
 # Calculate the size of each patch
 conv_height, conv_width = conv_features.shape[-2:]
-patch_width = conv_width // 3
+patch_width = conv_width // 3 # patch 3x3
 patch_height = conv_height // 3
 
 # Generate anchor boxes for each patch
