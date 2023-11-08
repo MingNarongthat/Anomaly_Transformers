@@ -10,22 +10,53 @@ import torch.nn as nn
 import torchvision.models as models
 
 class AnchorBoxPredictor(nn.Module):
-    def __init__(self, feature_size, num_anchors):
+    def __init__(self, feature_size, num_anchors, patch_size):
         super(AnchorBoxPredictor, self).__init__()
-        self.conv = nn.Conv2d(feature_size, num_anchors * 4, 1)
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(feature_size, num_anchors * 4, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(num_anchors * 4),
+            nn.ReLU()
+        )
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(num_anchors * 4, num_anchors * 4, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(num_anchors * 4),
+            nn.ReLU()
+        )
+        self.layer3 = nn.Sequential(
+            nn.Conv2d(num_anchors * 4, num_anchors * 4, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(num_anchors * 4),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.fc1 = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(4 * 2,num_anchors * 4 * 8),
+            nn.ReLU()
+        )
+        self.fc2 = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(num_anchors * 4 * 8, 8),
+            nn.ReLU()
+        )
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
         self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
         self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
 
     def forward(self, x):
         # Apply a 1x1 conv to predict the 4 values tx, ty, tw, th for each anchor
-        out = self.conv(x)
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.fc1(out)
+        out = self.fc2(out)
+        out = self.adaptive_pool(out)
         # Assuming out has shape [batch_size, num_anchors * 4, grid_height, grid_width]
         num_anchors = 3
         # Split the output into the tx, ty (which we pass through a sigmoid) and tw, th (which we pass through a tanh)
         tx_ty, tw_th = torch.split(out, num_anchors * 2, 1)
         tx_ty = self.sigmoid(tx_ty)
         tw_th = self.tanh(tw_th)
-
+        # return out
         return torch.cat([tx_ty, tw_th], 1)
 
 
@@ -44,7 +75,7 @@ k = 3  # Number of anchor boxes
 patch_grid = 3
 feature_chanel = 512
 
-nn = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k)
+nn = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 
 image_path = '/opt/project/dataset/Image/Testing/anomaly/'
 for filename in os.listdir(image_path):
@@ -59,12 +90,12 @@ for filename in os.listdir(image_path):
             conv_features = vgg16_model(image_batch)
         
         pred_offsets = nn(conv_features)
-        print(pred_offsets.shape)
-        tx = pred_offsets[:, 0::k*4, :, :]
-        ty = pred_offsets[:, 1::k*4, :, :]
-        tw = pred_offsets[:, 2::k*4, :, :]
-        th = pred_offsets[:, 3::k*4, :, :]
-        print(tx.shape)
+        # print(pred_offsets.shape)
+        tx = pred_offsets[:, 0::k*4, :, :].detach().numpy()
+        ty = pred_offsets[:, 1::k*4, :, :].detach().numpy()
+        tw = pred_offsets[:, 2::k*4, :, :].detach().numpy()
+        th = pred_offsets[:, 3::k*4, :, :].detach().numpy()
+        # print(tx[0][0][0][0]) # (arr, arr, row ,col)
 
         conv_height, conv_width = conv_features.shape[-2:]
         patch_width = conv_width // patch_grid
@@ -77,11 +108,12 @@ for filename in os.listdir(image_path):
                 wa, ha = patch_width / 2, patch_height / 2
 
                 for anchor in range(k):
-                    tx, ty, tw, th = np.random.rand(4)
-                    x = xa + tx * wa
-                    y = ya + ty * ha
-                    w = wa * np.exp(tw)
-                    h = ha * np.exp(th)
+                    tx1, ty1, tw1, th1 = np.random.rand(4)
+                    # tx1, ty1, tw1, th1 = tx[0][0][i][j], ty[0][0][i][j], tw[0][0][i][j], th[0][0][i][j]
+                    x = xa + tx1 * wa
+                    y = ya + ty1 * ha
+                    w = wa * np.exp(tw1)
+                    h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
 
         # Assume original image size is desired for visualization
