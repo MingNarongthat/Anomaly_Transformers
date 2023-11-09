@@ -9,6 +9,7 @@ import matplotlib.patches as patches
 import torch.nn as nn
 import torchvision.models as models
 
+# Generate acnhor box layer
 class AnchorBoxPredictor(nn.Module):
     def __init__(self, feature_size, num_anchors, patch_size):
         super(AnchorBoxPredictor, self).__init__()
@@ -90,7 +91,7 @@ for filename in os.listdir(image_path):
             conv_features = vgg16_model(image_batch)
         
         pred_offsets = nn(conv_features)
-        # print(pred_offsets.shape)
+        print(pred_offsets.shape)
         tx = pred_offsets[:, 0::k*4, :, :].detach().numpy()
         ty = pred_offsets[:, 1::k*4, :, :].detach().numpy()
         tw = pred_offsets[:, 2::k*4, :, :].detach().numpy()
