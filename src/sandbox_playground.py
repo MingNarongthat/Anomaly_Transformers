@@ -70,3 +70,25 @@ print(predict_z)
 plt.scatter(z,predict_z)
 plt.savefig('/opt/project/tmp/sandbox.jpg')
 # plt.show()
+
+# Self Attention
+class Attention(nn.Module):
+    def __init__(self, hidden_size):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.Q = nn.Linear(hidden_size, hidden_size)
+        self.K = nn.Linear(hidden_size, hidden_size)
+        self.V = nn.Linear(hidden_size, hidden_size)
+        
+    def forward(self, x):
+        queries = self.Q(x)
+        keys = self.K(x)
+        values = self.V(x)
+        scores = torch.bmm(queries, keys.transpose(1, 2))
+        scores = scores / (self.hidden_size ** 0.5)
+        attention = F.softmax(scores, dim=2)
+        hidden_states = torch.bmm(attention, values)
+        
+        return hidden_states
+    
+    
