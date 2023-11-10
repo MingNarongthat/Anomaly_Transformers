@@ -103,6 +103,24 @@ class AnchorBoxPredictor(nn.Module):
         tw_th = self.tanh(tw_th)
         # return out
         return torch.cat([tx_ty, tw_th], 1)
+    
+def MaskingImage(image, up_l, up_r, down_l, down_r):
+    # Check if the image has an alpha channel
+    if image.shape[2] == 3:  # No alpha channel
+        # Add an alpha channel, filled with 255 (no transparency)
+        image = np.concatenate([image, np.full((image.shape[0], image.shape[1], 1), 255, dtype=image.dtype)], axis=-1)
+
+    # Create a mask with the same dimensions as the image, with a default value of 255 (fully opaque)
+    mask = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8) * 255
+
+    # Define the region you want to mask (make transparent or black)
+    # For example, a rectangle from (50, 50) to (200, 200)
+    mask[up_l:down_l, up_r:down_r] = 0  # Set to 0 where you want transparency or black
+
+    # Apply the mask to the alpha channel
+    image[..., 3] = mask
+    
+    return image
 
 
 # Define the transformations to preprocess the image
