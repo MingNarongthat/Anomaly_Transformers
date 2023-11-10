@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <mxfile host="app.diagrams.net" modified="2023-11-10T01:55:58.291Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="Eyg9ENkAjZrxEIS6_04h" version="22.1.0" type="device" pages="8">
+=======
+<mxfile host="app.diagrams.net" modified="2023-11-10T02:29:31.889Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="ELbQ2Qg7vNslYEY9YfWO" version="22.1.0" type="device" pages="8">
+>>>>>>> 625a55c (add self attention)
   <diagram id="dA8e0bMIt6unI36CABdZ" name="Overview Architecture">
     <mxGraphModel dx="1194" dy="863" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -1498,10 +1502,17 @@
         <mxCell id="6MmEdC0_tBsU4l93nz5g-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="6MmEdC0_tBsU4l93nz5g-2" target="6MmEdC0_tBsU4l93nz5g-9" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+<<<<<<< HEAD
         <mxCell id="pdYnI_uakynuWdFaFZff-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="6MmEdC0_tBsU4l93nz5g-2" target="6MmEdC0_tBsU4l93nz5g-55">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1525" y="195" />
+=======
+        <mxCell id="pdYnI_uakynuWdFaFZff-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6MmEdC0_tBsU4l93nz5g-2" target="pdYnI_uakynuWdFaFZff-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1525" y="180" />
+>>>>>>> 625a55c (add self attention)
             </Array>
           </mxGeometry>
         </mxCell>
@@ -1596,7 +1607,11 @@
           <mxGeometry x="1757" y="715" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6MmEdC0_tBsU4l93nz5g-55" value="Focus layer" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=90;verticalAlign=middle;horizontal=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+<<<<<<< HEAD
           <mxGeometry x="1600" y="145" width="130" height="100" as="geometry" />
+=======
+          <mxGeometry x="1805" y="130" width="130" height="100" as="geometry" />
+>>>>>>> 625a55c (add self attention)
         </mxCell>
         <mxCell id="6MmEdC0_tBsU4l93nz5g-58" value="Focus layer" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=90;verticalAlign=middle;horizontal=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="1448.75" y="710" width="130" height="70" as="geometry" />
@@ -1823,6 +1838,15 @@
         <mxCell id="pdYnI_uakynuWdFaFZff-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="ewFjPMvQWSnCzz6IT_7N-1" target="ewFjPMvQWSnCzz6IT_7N-58">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+<<<<<<< HEAD
+=======
+        <mxCell id="pdYnI_uakynuWdFaFZff-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="pdYnI_uakynuWdFaFZff-4" target="6MmEdC0_tBsU4l93nz5g-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pdYnI_uakynuWdFaFZff-4" value="Attention Layer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1625" y="105" width="75" height="150" as="geometry" />
+        </mxCell>
+>>>>>>> 625a55c (add self attention)
       </root>
     </mxGraphModel>
   </diagram>
