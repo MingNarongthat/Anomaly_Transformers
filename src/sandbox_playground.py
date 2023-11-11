@@ -3,8 +3,8 @@
 
 # import torch
 # import torch.nn.functional as F
-import numpy as np
-import matplotlib.pyplot as plt 
+# import numpy as np
+# import matplotlib.pyplot as plt 
 
 # print(torch.__version__)
 # print(torch.cuda.is_available())
@@ -91,27 +91,39 @@ import matplotlib.pyplot as plt
         
 #         return hidden_states
     
-from PIL import Image
-import cv2
-import numpy as np
+# from PIL import Image
+# import cv2
+# import numpy as np
 
-# Load the image
-image = cv2.imread('/opt/project/dataset/Image/Testing/anomaly/Experiment VED with chatGPT.jpg')
+# # Load the image
+# image = cv2.imread('/opt/project/dataset/Image/Testing/anomaly/Experiment VED with chatGPT.jpg')
 
-# Check if the image has an alpha channel
-if image.shape[2] == 3:  # No alpha channel
-    # Add an alpha channel, filled with 255 (no transparency)
-    image = np.concatenate([image, np.full((image.shape[0], image.shape[1], 1), 255, dtype=image.dtype)], axis=-1)
+# # Check if the image has an alpha channel
+# if image.shape[2] == 3:  # No alpha channel
+#     # Add an alpha channel, filled with 255 (no transparency)
+#     image = np.concatenate([image, np.full((image.shape[0], image.shape[1], 1), 255, dtype=image.dtype)], axis=-1)
 
-# Create a mask with the same dimensions as the image, with a default value of 255 (fully opaque)
-mask = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8) * 255
+# # Create a mask with the same dimensions as the image, with a default value of 255 (fully opaque)
+# mask = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8) * 255
 
-# Define the region you want to mask (make transparent or black)
-# For example, a rectangle from (50, 50) to (200, 200)
-mask[50:200, 50:200] = 0  # Set to 0 where you want transparency or black
+# # Define the region you want to mask (make transparent or black)
+# # For example, a rectangle from (50, 50) to (200, 200)
+# mask[50:200, 50:200] = 0  # Set to 0 where you want transparency or black
 
-# Apply the mask to the alpha channel
-image[..., 3] = mask
+# # Apply the mask to the alpha channel
+# image[..., 3] = mask
 
-# Save the image with transparency
-cv2.imwrite('/opt/project/tmp/masked_image.png', image)  # Use .png to support transparency
+# # Save the image with transparency
+# cv2.imwrite('/opt/project/tmp/masked_image.png', image)  # Use .png to support transparency
+
+from datasets import load_metric
+import evaluate
+
+bleu = evaluate.load("google_bleu")
+pred_list = ["the soil collapse on the cliff"]
+# pred = list(pred_list.split(" "))
+gt_list = [["the cliff is collapsed"]]
+# gt = list(gt_list.split(" "))
+
+bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
+print(bleu_score["google_bleu"])

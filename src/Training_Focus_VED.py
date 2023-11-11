@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import torch.nn as nn
 import torchvision.models as models
+import evaluate
 
 # Self attention layer
 class SelfAttention(nn.Module):
@@ -121,6 +122,15 @@ def MaskingImage(image, up_l, up_r, down_l, down_r):
     image[..., 3] = mask
     
     return image
+
+def compute_bleu(pred, gt):
+    bleu = evaluate.load("google_bleu")
+    pred_list = [pred]
+    gt_list = [[gt]]
+
+    bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
+    
+    return bleu_score["google_bleu"]
 
 
 # Define the transformations to preprocess the image
