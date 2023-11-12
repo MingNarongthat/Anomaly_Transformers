@@ -11,46 +11,46 @@ import torchvision.models as models
 import evaluate
 
 # Self attention layer
-class SelfAttention(nn.Module):
-    def __init__(self, feature_size, heads):
-        super(SelfAttention, self).__init__()
-        self.feature_size = feature_size
-        self.heads = heads
-        self.head_dim = feature_size // heads
+# class SelfAttention(nn.Module):
+#     def __init__(self, feature_size, heads):
+#         super(SelfAttention, self).__init__()
+#         self.feature_size = feature_size
+#         self.heads = heads
+#         self.head_dim = feature_size // heads
 
-        assert (
-            self.head_dim * heads == feature_size
-        ), "Feature size needs to be divisible by heads"
+#         assert (
+#             self.head_dim * heads == feature_size
+#         ), "Feature size needs to be divisible by heads"
 
-        self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.fc_out = nn.Linear(heads * self.head_dim, feature_size)
+#         self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
+#         self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
+#         self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
+#         self.fc_out = nn.Linear(heads * self.head_dim, feature_size)
 
-    def forward(self, values, keys, query):
-        N = query.shape[0]
-        value_len, key_len, query_len = values.shape[2], keys.shape[2], query.shape[2]
+#     def forward(self, values, keys, query):
+#         N = query.shape[0]
+#         value_len, key_len, query_len = values.shape[2], keys.shape[2], query.shape[2]
 
-        # Split the embedding into self.heads different pieces
-        values = values.reshape(N, self.heads, self.head_dim, value_len)
-        keys = keys.reshape(N, self.heads, self.head_dim, key_len)
-        queries = query.reshape(N, self.heads, self.head_dim, query_len)
+#         # Split the embedding into self.heads different pieces
+#         values = values.reshape(N, self.heads, self.head_dim, value_len)
+#         keys = keys.reshape(N, self.heads, self.head_dim, key_len)
+#         queries = query.reshape(N, self.heads, self.head_dim, query_len)
 
-        values = self.values(values)
-        keys = self.keys(keys)
-        queries = self.queries(queries)
+#         values = self.values(values)
+#         keys = self.keys(keys)
+#         queries = self.queries(queries)
 
-        # Scaled dot-product attention
-        energy = torch.einsum("nhqd,nhkd->nhqk", [queries, keys])
+#         # Scaled dot-product attention
+#         energy = torch.einsum("nhqd,nhkd->nhqk", [queries, keys])
 
-        attention = torch.softmax(energy / (self.feature_size ** (1 / 2)), dim=3)
+#         attention = torch.softmax(energy / (self.feature_size ** (1 / 2)), dim=3)
 
-        out = torch.einsum("nhql,nhld->nqhd", [attention, values]).reshape(
-            N, self.heads * self.head_dim, value_len
-        )
+#         out = torch.einsum("nhql,nhld->nqhd", [attention, values]).reshape(
+#             N, self.heads * self.head_dim, value_len
+#         )
 
-        out = self.fc_out(out)
-        return out
+#         out = self.fc_out(out)
+#         return out
     
     
 # Generate acnhor box layer
@@ -73,7 +73,7 @@ class AnchorBoxPredictor(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
-        self.attention = SelfAttention(num_anchors * 4, heads)
+        # self.attention = SelfAttention(num_anchors * 4, heads)
         self.fc1 = nn.Sequential(
             nn.Dropout(0.3),
             nn.Linear(4 * 2,num_anchors * 4 * 8),
@@ -164,12 +164,14 @@ for filename in os.listdir(image_path):
             conv_features = vgg16_model(image_batch)
         
         pred_offsets = nn(conv_features)
-        print(pred_offsets.shape)
-        tx = pred_offsets[:, 0::k*4, :, :].detach().numpy()
-        ty = pred_offsets[:, 1::k*4, :, :].detach().numpy()
-        tw = pred_offsets[:, 2::k*4, :, :].detach().numpy()
-        th = pred_offsets[:, 3::k*4, :, :].detach().numpy()
+        # print(pred_offsets.shape)
+        
+        tx = pred_offsets[:, 0:k*4:4, :, :].detach().numpy()
+        ty = pred_offsets[:, 1:k*4:4, :, :].detach().numpy()
+        tw = pred_offsets[:, 2:k*4:4, :, :].detach().numpy()
+        th = pred_offsets[:, 3:k*4:4, :, :].detach().numpy()
         # print(tx[0][0][0][0]) # (arr, arr, row ,col)
+        # print(ty[0][0])
 
         conv_height, conv_width = conv_features.shape[-2:]
         patch_width = conv_width // patch_grid
@@ -183,8 +185,8 @@ for filename in os.listdir(image_path):
 
                 for anchor in range(k):
                     tx1, ty1, tw1, th1 = np.random.rand(4)
-                    print(anchor)
-                    # tx1, ty1, tw1, th1 = tx[0][0][i][j], ty[0][0][i][j], tw[0][0][i][j], th[0][0][i][j]
+                    # print(anchor)
+                    # tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
                     x = xa + tx1 * wa
                     y = ya + ty1 * ha
                     w = wa * np.exp(tw1)

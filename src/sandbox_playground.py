@@ -116,14 +116,19 @@
 # # Save the image with transparency
 # cv2.imwrite('/opt/project/tmp/masked_image.png', image)  # Use .png to support transparency
 
-from datasets import load_metric
-import evaluate
+# from datasets import load_metric
+# import evaluate
 
-bleu = evaluate.load("google_bleu")
-pred_list = ["the soil collapse on the cliff"]
-# pred = list(pred_list.split(" "))
-gt_list = [["the cliff is collapsed"]]
-# gt = list(gt_list.split(" "))
+# bleu = evaluate.load("google_bleu")
+# pred_list = ["the soil collapse on the cliff"]
+# # pred = list(pred_list.split(" "))
+# gt_list = [["the cliff is collapsed"]]
+# # gt = list(gt_list.split(" "))
 
-bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
-print(bleu_score["google_bleu"])
+# bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
+# print(bleu_score["google_bleu"])
+
+sample_data = range(0,12)
+test_ran = sample_data[3:12:4]
+for i in test_ran:
+    print(i)
