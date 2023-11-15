@@ -1,10 +1,10 @@
-# ### This script not use for our project
-# ### This using for tesing environment and debugging
+### This script not use for our project
+### This using for tesing environment and debugging
 
-# import torch
-# import torch.nn.functional as F
-# import numpy as np
-# import matplotlib.pyplot as plt 
+import torch
+import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt 
 
 # print(torch.__version__)
 # print(torch.cuda.is_available())
@@ -13,16 +13,16 @@
 # print(x)
 
 # y = torch.rand(2, 3)
-# # print(y)
+# print(y)
 
-# # print(x+y)
-# # print(x*y)
-# # print(x/y)
-# # print(y/x)
-# # print(torch.matmul(x, torch.transpose(y,0,1)))
+# print(x+y)
+# print(x*y)
+# print(x/y)
+# print(y/x)
+# print(torch.matmul(x, torch.transpose(y,0,1)))
 
-# # ## reshape tensor
-# # print(x.view(1,6))
+# ## reshape tensor
+# print(x.view(1,6))
 
 # class TestNeuralNetwork(torch.nn.Module):
 #     def __init__(self):
@@ -69,9 +69,9 @@
 # print(predict_z)
 # plt.scatter(z,predict_z)
 # plt.savefig('/opt/project/tmp/sandbox.jpg')
-# # plt.show()
+# plt.show()
 
-# # Self Attention
+# Self Attention
 # class Attention(nn.Module):
 #     def __init__(self, hidden_size):
 #         super().__init__()
@@ -91,30 +91,30 @@
         
 #         return hidden_states
     
-# from PIL import Image
-# import cv2
-# import numpy as np
+from PIL import Image
+import cv2
+import numpy as np
 
-# # Load the image
-# image = cv2.imread('/opt/project/dataset/Image/Testing/anomaly/Experiment VED with chatGPT.jpg')
+# Load the image
+image = cv2.imread('/opt/project/dataset/Image/Testing/anomaly/Experiment VED with chatGPT.jpg')
 
-# # Check if the image has an alpha channel
-# if image.shape[2] == 3:  # No alpha channel
-#     # Add an alpha channel, filled with 255 (no transparency)
-#     image = np.concatenate([image, np.full((image.shape[0], image.shape[1], 1), 255, dtype=image.dtype)], axis=-1)
+# Check if the image has an alpha channel
+if image.shape[2] == 3:  # No alpha channel
+    # Add an alpha channel, filled with 255 (no transparency)
+    image = np.concatenate([image, np.full((image.shape[0], image.shape[1], 1), 255, dtype=image.dtype)], axis=-1)
 
-# # Create a mask with the same dimensions as the image, with a default value of 255 (fully opaque)
-# mask = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8) * 255
+# Create a mask with the same dimensions as the image, with a default value of 255 (fully opaque)
+mask = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8) * 255
 
-# # Define the region you want to mask (make transparent or black)
-# # For example, a rectangle from (50, 50) to (200, 200)
-# mask[50:200, 50:200] = 0  # Set to 0 where you want transparency or black
+# Define the region you want to mask (make transparent or black)
+# For example, a rectangle from (50, 50) to (200, 200)
+mask[50:200, 50:200] = 0  # Set to 0 where you want transparency or black
 
-# # Apply the mask to the alpha channel
-# image[..., 3] = mask
+# Apply the mask to the alpha channel
+image[..., 3] = mask
 
-# # Save the image with transparency
-# cv2.imwrite('/opt/project/tmp/masked_image.png', image)  # Use .png to support transparency
+# Save the image with transparency
+cv2.imwrite('/opt/project/tmp/masked_image.png', image)  # Use .png to support transparency
 
 # from datasets import load_metric
 # import evaluate
@@ -128,10 +128,10 @@
 # bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
 # print(bleu_score["google_bleu"])
 
-sample_data = range(0,12)
-test_ran = sample_data[3:12:4]
-for i in test_ran:
-    print(i)
+# sample_data = range(0,12)
+# test_ran = sample_data[3:12:4]
+# for i in test_ran:
+#     print(i)
     
     
 # test_caption = ["the soil moving on the cliff with the man on red cloth",
@@ -198,26 +198,28 @@ for filename in os.listdir(image_path):
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
+        print(filename)
+        print(anchor_boxes)
 
-        # Assume original image size is desired for visualization
-        original_width, original_height = image.size
-        x_scale = original_width / conv_width
-        y_scale = original_height / conv_height
+        # # Assume original image size is desired for visualization
+        # original_width, original_height = image.size
+        # x_scale = original_width / conv_width
+        # y_scale = original_height / conv_height
 
-        # Visualization
-        fig, ax = plt.subplots(1)
-        ax.imshow(image)
+        # # Visualization
+        # fig, ax = plt.subplots(1)
+        # ax.imshow(image)
 
-        for (x, y, w, h) in anchor_boxes:
-            rect = patches.Rectangle(
-                (x * x_scale - w * x_scale / 2, y * y_scale - h * y_scale / 2),
-                w * x_scale,
-                h * y_scale,
-                linewidth=1,
-                edgecolor='r',
-                facecolor='none'
-            )
-            ax.add_patch(rect)
+        # for (x, y, w, h) in anchor_boxes:
+        #     rect = patches.Rectangle(
+        #         (x * x_scale - w * x_scale / 2, y * y_scale - h * y_scale / 2),
+        #         w * x_scale,
+        #         h * y_scale,
+        #         linewidth=1,
+        #         edgecolor='r',
+        #         facecolor='none'
+        #     )
+        #     ax.add_patch(rect)
 
-        plt.savefig('/opt/project/tmp/TestAnchor{}.jpg'.format(filename))
-        plt.close(fig)  # Close the figure to avoid memory issues with many images
+        # plt.savefig('/opt/project/tmp/TestAnchor{}.jpg'.format(filename))
+        # plt.close(fig)  # Close the figure to avoid memory issues with many images
