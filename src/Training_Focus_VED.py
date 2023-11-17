@@ -44,20 +44,20 @@ class CaptionDataset(Dataset):
 
 # Self attention layer
 # class SelfAttention(nn.Module):
-#     def __init__(self, feature_size, heads):
-#         super(SelfAttention, self).__init__()
-#         self.feature_size = feature_size
-#         self.heads = heads
-#         self.head_dim = feature_size // heads
+    # def __init__(self, feature_size, heads):
+    #     super(SelfAttention, self).__init__()
+    #     self.feature_size = feature_size
+    #     self.heads = heads
+    #     self.head_dim = feature_size // heads
 
-#         assert (
-#             self.head_dim * heads == feature_size
-#         ), "Feature size needs to be divisible by heads"
+    #     assert (
+    #         self.head_dim * heads == feature_size
+    #     ), "Feature size needs to be divisible by heads"
 
-#         self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
-#         self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
-#         self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
-#         self.fc_out = nn.Linear(heads * self.head_dim, feature_size)
+    #     self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
+    #     self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
+    #     self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
+    #     self.fc_out = nn.Linear(heads * self.head_dim, feature_size)
 
 #     def forward(self, values, keys, query):
 #         N = query.shape[0]

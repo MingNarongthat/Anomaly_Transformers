@@ -23,12 +23,12 @@ class AnchorBoxPredictor(nn.Module):
     def __init__(self, feature_size, num_anchors, patch_size):
         super(AnchorBoxPredictor, self).__init__()
         self.layer1 = nn.Sequential(
-            nn.Conv2d(feature_size, num_anchors * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(feature_size, num_anchors * 4, kernel_size=3, stride=3, padding=1),
             nn.BatchNorm2d(num_anchors * 4),
             nn.ReLU()
         )
         self.layer2 = nn.Sequential(
-            nn.Conv2d(num_anchors * 4, num_anchors * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(num_anchors * 4, num_anchors * 4, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_anchors * 4),
             nn.ReLU()
         )
@@ -41,7 +41,8 @@ class AnchorBoxPredictor(nn.Module):
         # self.attention = SelfAttention(num_anchors * 4, heads)
         self.fc1 = nn.Sequential(
             nn.Dropout(0.3),
-            nn.Linear(4 * 2,num_anchors * 4 * 8),
+            # nn.Linear(4 * 2,num_anchors * 4 * 8),
+            nn.Linear(1,num_anchors * 4 * 8),
             nn.ReLU()
         )
         self.fc2 = nn.Sequential(
@@ -105,7 +106,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231115.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/test_checkpoint20231116.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -115,7 +116,7 @@ best_loss = float('inf')
 feature_chanel = 512
 k = 3  # Number of anchor boxes
 patch_grid = 3
-num_epochs = 30
+num_epochs = 3
 # ==============================================================================================================================
 # Define the transformations to preprocess the image
 transform_pipeline = transforms.Compose([
@@ -128,7 +129,7 @@ transform_pipeline = transforms.Compose([
 
 # Load JSON file
 root_dir = '/opt/project/dataset/DataAll/Training/'
-with open('/opt/project/dataset/focus_caption_dataset_training_v1.json', 'r') as file:
+with open('/opt/project/dataset/focus_caption_dataset_Sheet1_v1.json', 'r') as file:
     data = json.load(file)
     # print(len(data))
 
@@ -144,13 +145,13 @@ vgg16_model = models.vgg16(pretrained=True).features
 vgg16_model.eval()
 
 # Load VED model ==============================================================================================================================
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
-feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+# t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
+# feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+# tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 
-# t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
-# feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
-# tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
+feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 optimizer = optim.Adam(model.parameters(), lr=0.005)
@@ -170,9 +171,18 @@ def calculate_loss(image, gt_caption):
         bleu_score = 100 - compute_bleu(caption_without_special_tokens, gt_caption)*100
         
         return bleu_score
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+# Assuming 'model' is your combined VGG16 and custom model
+total_params = count_parameters(model)
+print(f"Total trainable parameters: {total_params}")
     
 start_time_str = []
 end_time_str = []
+avg_loss_count = []
+count = 0
 images_path = '/opt/project/dataset/DataAll/Training/'
 # Training and validation loop
 for epoch in range(num_epochs):
@@ -182,6 +192,9 @@ for epoch in range(num_epochs):
     start_time_str.append(start_time.strftime("%Y-%m-%d %H:%M:%S"))
     model.train()
     for idx in range(len(train_data)):
+        if idx%5 == 0:
+            count = round((count+idx)/len(train_data)*100)
+            print("start new data. Progress >>>> {}".format(count))
         # Print the shape of the images for debugging
         # print(f"Images shape before processing: {images.shape}")
         original_image = cv2.imread(os.path.join(images_path, train_data[idx]["image"]))
@@ -198,6 +211,7 @@ for epoch in range(num_epochs):
             conv_features = vgg16_model(image)
         # conv_features = transition_layer(conv_features)  # Adjusting channels to 1024
         outputs = model(conv_features)
+        print(outputs.shape)
             
         tx = outputs[:, 0:k*4:4, :, :].detach().numpy()
         ty = outputs[:, 1:k*4:4, :, :].detach().numpy()
@@ -225,6 +239,7 @@ for epoch in range(num_epochs):
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
+        # print("end masked image")
         # print(anchor_boxes)
         masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale)
         # After the masking process
@@ -310,6 +325,7 @@ for epoch in range(num_epochs):
             total_bleu_score = total_bleu_score+loss_value
 
     avg_loss = total_bleu_score
+    avg_loss_count.append(avg_loss)
     # Save the model if validation loss has decreased
     if avg_loss < best_loss:
         save_checkpoint({
@@ -327,6 +343,6 @@ for epoch in range(num_epochs):
     csv_file = "/opt/project/tmp/training_logFocus2.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
-        writer.writerow(["Epoch", "Script Name", "Start Time", "End Time"])
+        writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocus2.py", start_time_str[epoch], end_time_str[epoch]])
+            writer.writerow([epoch, "trainingFocus2.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
