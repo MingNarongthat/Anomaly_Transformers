@@ -135,10 +135,10 @@ for filename in os.listdir(images_path):
             outputs = model(conv_features)  # Get the model outputs
         
         # print("Predict t")
-        tx = outputs[:, 0:k*4:4, :, :].detach().numpy()
-        ty = outputs[:, 1:k*4:4, :, :].detach().numpy()
-        tw = outputs[:, 2:k*4:4, :, :].detach().numpy()
-        th = outputs[:, 3:k*4:4, :, :].detach().numpy()
+        tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
+        ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
+        tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
+        th = outputs[:, 7:k*4:2, :, :].detach().numpy()
         # print(tx)
         
         conv_height, conv_width = conv_features.shape[-2:]

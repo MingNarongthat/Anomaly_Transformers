@@ -238,45 +238,37 @@ import matplotlib.patches as patches
 import cv2
 
 class SelfAttention(nn.Module):
-    def __init__(self, feature_size, heads):
-        super(SelfAttention, self).__init__()
-        self.feature_size = feature_size
-        self.heads = heads
-        self.head_dim = feature_size // heads
+    """ Self attention Layer"""
+    def __init__(self,in_dim):
+        super(SelfAttention,self).__init__()
+        self.chanel_in = in_dim
+        # self.activation = activation
+        
+        self.query_conv = nn.Conv2d(in_channels = in_dim , out_channels = in_dim//8 , kernel_size= 1)
+        self.key_conv = nn.Conv2d(in_channels = in_dim , out_channels = in_dim//8 , kernel_size= 1)
+        self.value_conv = nn.Conv2d(in_channels = in_dim , out_channels = in_dim , kernel_size= 1)
+        self.gamma = nn.Parameter(torch.zeros(1))
 
-        assert (
-            self.head_dim * heads == feature_size
-        ), "Feature size needs to be divisible by heads"
+        self.softmax  = nn.Softmax(dim=-1) #
+    def forward(self,x):
+        """
+            inputs :
+                x : input feature maps( B X C X W X H)
+            returns :
+                out : self attention value + input feature 
+                attention: B X N X N (N is Width*Height)
+        """
+        m_batchsize,C,width ,height = x.size()
+        proj_query  = self.query_conv(x).view(m_batchsize,-1,width*height).permute(0,2,1) # B X CX(N)
+        proj_key =  self.key_conv(x).view(m_batchsize,-1,width*height) # B X C x (*W*H)
+        energy =  torch.bmm(proj_query,proj_key) # transpose check
+        attention = self.softmax(energy) # BX (N) X (N) 
+        proj_value = self.value_conv(x).view(m_batchsize,-1,width*height) # B X C X N
 
-        self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.fc_out = nn.Linear(heads * self.head_dim, feature_size)
-
-    def forward(self, values, keys, query):
-        N, channels, spatial_dim = values.shape
-
-        # Flatten the spatial dimensions and then split into multiple heads
-        values = values.view(N, self.heads, self.head_dim, spatial_dim).permute(0, 2, 1, 3)
-        keys = keys.view(N, self.heads, self.head_dim, spatial_dim).permute(0, 2, 1, 3)
-        queries = query.view(N, self.heads, self.head_dim, spatial_dim).permute(0, 2, 1, 3)
-
-        # Apply linear transformations
-        values = self.values(values)
-        keys = self.keys(keys)
-        queries = self.queries(queries)
-
-        # Compute attention scores
-        energy = torch.einsum("nqhd,nkhd->nhqk", [queries, keys])
-
-        attention = torch.softmax(energy / (self.feature_size ** (1 / 2)), dim=3)
-
-        out = torch.einsum("nhql,nlhd->nqhd", [attention, values]).reshape(
-            N, height * width, self.heads * self.head_dim
-        )
-
-        # Reshape back to the original feature map shape
-        out = self.fc_out(out).permute(0, 2, 1).view(N, self.feature_size, height, width)
+        out = torch.bmm(proj_value,attention.permute(0,2,1) )
+        out = out.view(m_batchsize,C,width,height)
+        
+        out = self.gamma*out + x
         return out
 
 # Generate acnhor box layer
@@ -299,7 +291,7 @@ class AnchorBoxPredictor(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
-        self.attention = SelfAttention(num_anchors * 4, heads=1)
+        self.self_attention = SelfAttention(num_anchors * 4)
         self.fc1 = nn.Sequential(
             nn.Dropout(0.3),
             nn.Linear(4 * 2,num_anchors * 4 * 8),
@@ -313,32 +305,45 @@ class AnchorBoxPredictor(nn.Module):
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
         self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
         self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
+            nn.ReLU()
+        )
 
     def forward(self, x):
         # Apply a 1x1 conv to predict the 4 values tx, ty, tw, th for each anchor
         out0 = self.layer1(x)
+        print("Out0 size >>> {}".format(out0.shape))
         out1 = self.layer2(out0)
+        print("Out1 size >>> {}".format(out1.shape))
         out2 = self.layer3(out1)
+        print("Out2 size >>> {}".format(out2.shape))
+        
+        outatt1 = self.self_attention(out2)
+        outatt2 = self.adaptive_pool(outatt1)
+        outatt3 = self.conv1(outatt2)
+        outatt4 = self.sigmoid(outatt3)
+        outatt4 = (outatt4 > 0.5).float()
+        print("outattention size >>> {}".format(outatt4.shape))
+        
         out3 = self.fc1(out2)
+        print("Out3 size >>> {}".format(out3.shape))
         out4 = self.fc2(out3)
+        print("Out4 size >>> {}".format(out4.shape))
         out5 = self.adaptive_pool(out4)
+        print("out5 size >>> {}".format(out5.shape))
+        
         # Assuming out has shape [batch_size, num_anchors * 4, grid_height, grid_width]
         num_anchors = 3
         # Split the output into the tx, ty (which we pass through a sigmoid) and tw, th (which we pass through a tanh)
         tx_ty, tw_th = torch.split(out5, num_anchors * 2, 1)
         tx_ty = self.sigmoid(tx_ty)
+        print("tx_ty size >>> {}".format(tx_ty.shape))
         tw_th = self.tanh(tw_th)
-        
-        # Reshape for self-attention
-         # Flatten and reshape for self-attention
-        batch_size, channels, height, width = out2.shape
-        out6 = out2.view(batch_size, channels, -1)  # Flatten spatial dimensions
-
-        # Apply self-attention
-        out7 = self.attention(out6, out6, out6)
+        print("tw_th size >>> {}".format(tw_th.shape))
         
         # return out
-        return torch.cat([tx_ty, tw_th], 1), out5
+        return torch.cat([tx_ty, tw_th], 1), outatt4
 
 feature_chanel = 512
 patch_grid = 3
@@ -366,9 +371,10 @@ transform_pipeline = transforms.Compose([
 ])
 
 # Masking image ==============================================================================================================================
-def apply_masks_and_save(image, boxes, x_scale, y_scale):
+def apply_masks_and_save(image, boxes, x_scale, y_scale, focus):
     # Make a copy of the image to keep the original intact
     masked_image = image.copy()
+    count = 0
 
     for box in boxes:
         # Scale the box coordinates
@@ -383,9 +389,13 @@ def apply_masks_and_save(image, boxes, x_scale, y_scale):
         top_left_y = max(center_y_scaled - box_height_scaled // 2, 0)
         bottom_right_x = min(center_x_scaled + box_width_scaled // 2, masked_image.shape[1] - 1)
         bottom_right_y = min(center_y_scaled + box_height_scaled // 2, masked_image.shape[0] - 1)
-
-        # Apply the mask
-        cv2.rectangle(masked_image, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), (0, 0, 0), -1)
+        
+        if focus[count][0] == 1:
+            # Apply the mask
+            cv2.rectangle(masked_image, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), (0, 0, 0), -1)
+            count = count + 1
+        else:
+            count = count + 1
 
     return masked_image
 
@@ -408,12 +418,14 @@ for filename in os.listdir(images_path):
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
-        print(close_outputs.shape)
+        focus = close_outputs.reshape(27,1).tolist()
+        print(focus)
+        # print(focus[0][0])
         # print("Predict t")
-        tx = outputs[:, 0:k*4:4, :, :].detach().numpy()
-        ty = outputs[:, 1:k*4:4, :, :].detach().numpy()
-        tw = outputs[:, 2:k*4:4, :, :].detach().numpy()
-        th = outputs[:, 3:k*4:4, :, :].detach().numpy()
+        tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
+        ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
+        tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
+        th = outputs[:, 7:k*4:2, :, :].detach().numpy()
         # print(tx)
         
         conv_height, conv_width = conv_features.shape[-2:]
@@ -438,9 +450,9 @@ for filename in os.listdir(images_path):
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
-        # print(anchor_boxes)
-        # masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale)
-        # cv2.imwrite('/opt/project/tmp/TestAnchor3{}'.format(filename), masked_image)
+
+        masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale,focus)
+        cv2.imwrite('/opt/project/tmp/TestAnchor5{}'.format(filename), masked_image)
 
                         
 

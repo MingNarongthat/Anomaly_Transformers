@@ -252,10 +252,10 @@ def calculate_loss(image, gt_caption):
 
 # output from model and feature input from VGG16
 def calculate_rectmasked(image, output, features, patch_grid):
-    tx = outputs[:, 0:k*4:4, :, :].detach().numpy()
-    ty = outputs[:, 1:k*4:4, :, :].detach().numpy()
-    tw = outputs[:, 2:k*4:4, :, :].detach().numpy()
-    th = outputs[:, 3:k*4:4, :, :].detach().numpy()
+    tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
+    ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
+    tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
+    th = outputs[:, 7:k*4:2, :, :].detach().numpy()
     conv_height, conv_width = features.shape[-2:]
     patch_width = conv_width // patch_grid
     patch_height = conv_height // patch_grid
