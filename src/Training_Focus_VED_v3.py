@@ -77,7 +77,7 @@ class AnchorBoxPredictor(nn.Module):
         # self.attention = SelfAttention(num_anchors * 4, heads)
         self.fc1 = nn.Sequential(
             nn.Dropout(0.3),
-            # nn.Linear(4 * 2,num_anchors * 4 * 8),
+            # nn.Linear(4 * 2,num_anchors * 4 * 8), # for stride 1,1,1 in 3 layers
             nn.Linear(1,num_anchors * 4 * 8),
             nn.ReLU()
         )
@@ -170,7 +170,7 @@ best_loss = float('inf')
 feature_chanel = 512
 k = 3  # Number of anchor boxes
 patch_grid = 3
-num_epochs = 3
+num_epochs = 30
 # ==============================================================================================================================
 # Define the transformations to preprocess the image
 transform_pipeline = transforms.Compose([
