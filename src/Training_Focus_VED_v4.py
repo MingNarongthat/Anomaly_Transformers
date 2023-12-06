@@ -255,10 +255,10 @@ print(f"Total trainable parameters: {total_params}")
 start_time_str = []
 end_time_str = []
 avg_loss_count = []
-count = 0
 images_path = '/opt/project/dataset/DataAll/Training/'
 # Training and validation loop
 for epoch in range(num_epochs):
+    count = 0
     print("================== start epoch ==================")
     # Get current date and time
     start_time = datetime.datetime.now(tz=pytz.timezone('Asia/Tokyo'))
@@ -327,7 +327,7 @@ for epoch in range(num_epochs):
         tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
-        # loss_value = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
+        # loss = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
         loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
         # Backward pass and optimize
         # optimizer.zero_grad()
@@ -390,7 +390,7 @@ for epoch in range(num_epochs):
             tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
             caption_without_special_tokens = " ".join(tokens_without_special_tokens)
 
-            # loss_value = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
+            # loss = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
             loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
             total_bleu_score = total_bleu_score+loss
 
