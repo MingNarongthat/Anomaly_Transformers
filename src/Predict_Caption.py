@@ -8,14 +8,14 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # images_path = "/opt/project/dataset/Flooding/"
 
-images_path = "/opt/project/dataset/ResNet50/Testing/normal/"
+images_path = "/opt/project/dataset/DataAll/Testing/"
 
 # Load the pre-trained image captioning model and tokenizer
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
-# feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
-# tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+# feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+# tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 # print(t)
 # Create an empty list to store the results
 results = []
@@ -31,7 +31,7 @@ for filename in os.listdir(images_path):
 
         # Remove [CLS] and [SEP] tokens from the caption
         tokens = caption.split()
-        tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
+        tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]", "<|endoftext|>"]]
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
 
         # encode text to tensor
@@ -62,4 +62,4 @@ df = pd.DataFrame(results)
 
 # df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
 
-df.to_excel("/opt/project/dataset/experiment1_normal_VEDpretrain.xlsx", index=False)
+df.to_excel("/opt/project/dataset/experiment1_crop_vs_masked3.xlsx", index=False)
