@@ -17,7 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import evaluate
 import torch.optim as optim
-from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, ViTImageProcessor
+from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, ViTImageProcessor, AutoModel
 
 class SelfAttention(nn.Module):
     """ Self attention Layer"""
@@ -88,7 +88,7 @@ class AnchorBoxPredictor(nn.Module):
         )
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
         self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
-        self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
+        self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
             nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
             nn.ReLU()
@@ -104,7 +104,7 @@ class AnchorBoxPredictor(nn.Module):
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
         outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.5).float()
+        outatt4 = (outatt4 > 0.6).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)
@@ -121,7 +121,7 @@ class AnchorBoxPredictor(nn.Module):
         return torch.cat([tx_ty, tw_th], 1), outatt4
 
 # Masking image ==============================================================================================================================
-def apply_masks_and_save(image, boxes, x_scale, y_scale, focus):
+def apply_masks_and_save(image, boxes, focus):
     # Make a copy of the image to keep the original intact
     masked_image = image.copy()
     count = 0
@@ -129,16 +129,16 @@ def apply_masks_and_save(image, boxes, x_scale, y_scale, focus):
     for box in boxes:
         # Scale the box coordinates
         center_x, center_y, box_width, box_height = box
-        center_x_scaled = int(center_x * x_scale)
-        center_y_scaled = int(center_y * y_scale)
-        box_width_scaled = int(box_width * x_scale)
-        box_height_scaled = int(box_height * y_scale)
+        center_x_scaled = int(center_x)
+        center_y_scaled = int(center_y)
+        box_width_scaled = int(box_width)
+        box_height_scaled = int(box_height)
 
         # Convert to top-left and bottom-right coordinates
-        top_left_x = max(center_x_scaled - box_width_scaled // 2, 0)
-        top_left_y = max(center_y_scaled - box_height_scaled // 2, 0)
-        bottom_right_x = min(center_x_scaled + box_width_scaled // 2, masked_image.shape[1] - 1)
-        bottom_right_y = min(center_y_scaled + box_height_scaled // 2, masked_image.shape[0] - 1)
+        top_left_x = int(center_x_scaled - box_width_scaled // 2)
+        top_left_y = int(center_y_scaled - box_height_scaled // 2)
+        bottom_right_x = int(center_x_scaled + box_width_scaled // 2)
+        bottom_right_y = int(center_y_scaled + box_height_scaled // 2)
         
         if focus[count][0] == 1:
             # Apply the mask
@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/test_checkpoint20231117.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231206.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -188,7 +188,7 @@ with open('/opt/project/dataset/focus_caption_dataset_trainsmall_v1.json', 'r') 
     # print(len(data))
 
 random.shuffle(data) # shuffle for split train and validate
-split_ratio = 0.8
+split_ratio = 0.9
 split_index = int(len(data) * split_ratio)
 train_data = data[:split_index]
 val_data = data[split_index:]
@@ -202,7 +202,8 @@ vgg16_model.eval()
 t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
 feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-
+modelcosine = AutoModel.from_pretrained("bert-base-uncased")
+tokenizercosine = AutoTokenizer.from_pretrained("bert-base-uncased")
 # t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
 # feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 # tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
@@ -226,6 +227,24 @@ def calculate_loss(image, gt_caption):
         
         return bleu_score
 
+cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
+
+def caption_similarity_loss(generated_captions, true_captions):
+    # Tokenize and encode captions for the language model
+    gen_encodings = tokenizercosine(generated_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
+    true_encodings = tokenizercosine(true_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
+
+    # Generate embeddings
+    gen_embeddings = modelcosine(**gen_encodings).last_hidden_state.mean(dim=1)
+    true_embeddings = modelcosine(**true_encodings).last_hidden_state.mean(dim=1)
+
+    # Calculate cosine similarity
+    similarity = cosine_similarity(gen_embeddings, true_embeddings)
+    # Convert similarity to a loss (1 - similarity)
+    loss = 1 - similarity
+
+    return loss.mean()
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -247,8 +266,11 @@ for epoch in range(num_epochs):
     model.train()
     for idx in range(len(train_data)):
         if idx%5 == 0:
-            count = (count+idx)/len(train_data)*100
-            print("start new data. Progress >>>> {}".format(count))
+            count = count + idx
+            count1 = count / len(train_data)*100
+            print("start new data. Progress >>>> {}".format(count1))
+        else:
+            count = count + idx
         # Print the shape of the images for debugging
         # print(f"Images shape before processing: {images.shape}")
         original_image = cv2.imread(os.path.join(images_path, train_data[idx]["image"]))
@@ -273,19 +295,15 @@ for epoch in range(num_epochs):
         tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
         th = outputs[:, 7:k*4:2, :, :].detach().numpy()
         
-        conv_height, conv_width = conv_features.shape[-2:]
-        patch_width = conv_width // patch_grid
-        patch_height = conv_height // patch_grid
-        
         original_width, original_height = image1.size
-        x_scale = original_width / conv_width
-        y_scale = original_height / conv_height
-        
+        patch_width = original_width / patch_grid
+        patch_height = original_height / patch_grid
+  
         anchor_boxes = []
         for i in range(patch_grid):
             for j in range(patch_grid):
-                xa, ya = j * patch_width + patch_width / 2, i * patch_height + patch_height / 2
-                wa, ha = patch_width / 2, patch_height / 2
+                xa, ya = (j * patch_width) + (patch_width / 2), (i * patch_height) + (patch_height / 2)
+                wa, ha = patch_width, patch_height
 
                 for anchor in range(k):
                     tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
@@ -296,7 +314,7 @@ for epoch in range(num_epochs):
                     anchor_boxes.append((x, y, w, h))
         # print("end masked image")
         # print(anchor_boxes)
-        masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale,focus)
+        masked_image = apply_masks_and_save(original_image, anchor_boxes,focus)
         # After the masking process
         if masked_image is None:
             print("The masked_image is None, something went wrong during the masking process.")
@@ -309,10 +327,10 @@ for epoch in range(num_epochs):
         tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
-        loss_value = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
-        loss = torch.tensor(loss_value, requires_grad=True)
+        # loss_value = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
+        loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
         # Backward pass and optimize
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
@@ -341,19 +359,15 @@ for epoch in range(num_epochs):
             tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
             th = outputs[:, 7:k*4:2, :, :].detach().numpy()
             
-            conv_height, conv_width = conv_features.shape[-2:]
-            patch_width = conv_width // patch_grid
-            patch_height = conv_height // patch_grid
-            
             original_width, original_height = image1.size
-            x_scale = original_width / conv_width
-            y_scale = original_height / conv_height
+            patch_width = original_width / patch_grid
+            patch_height = original_height / patch_grid
             
             anchor_boxes = []
             for i in range(patch_grid):
                 for j in range(patch_grid):
-                    xa, ya = j * patch_width + patch_width / 2, i * patch_height + patch_height / 2
-                    wa, ha = patch_width / 2, patch_height / 2
+                    xa, ya = (j * patch_width) + (patch_width / 2), (i * patch_height) + (patch_height / 2)
+                    wa, ha = patch_width, patch_height
 
                     for anchor in range(k):
                         tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
@@ -363,7 +377,7 @@ for epoch in range(num_epochs):
                         h = ha * np.exp(th1)
                         anchor_boxes.append((x, y, w, h))
             # print(anchor_boxes)
-            masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale,focus)
+            masked_image = apply_masks_and_save(original_image, anchor_boxes,focus)
             # After the masking process
             if masked_image is None:
                 print("The masked_image is None, something went wrong during the masking process.")
@@ -376,11 +390,11 @@ for epoch in range(num_epochs):
             tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
             caption_without_special_tokens = " ".join(tokens_without_special_tokens)
 
-            loss_value = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
-            loss = torch.tensor(loss_value, requires_grad=True)
-            total_bleu_score = total_bleu_score+loss_value
+            # loss_value = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
+            loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+            total_bleu_score = total_bleu_score+loss
 
-    avg_loss = total_bleu_score
+    avg_loss = total_bleu_score/len(val_data)
     avg_loss_count.append(avg_loss)
     # Save the model if validation loss has decreased
     if avg_loss < best_loss:
@@ -396,9 +410,9 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus3.csv"
+    csv_file = "/opt/project/tmp/training_logFocus4.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocus2.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocus4.py", start_time_str[epoch], end_time_str[epoch], avg_loss])

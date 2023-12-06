@@ -111,14 +111,14 @@ class AnchorBoxPredictor(nn.Module):
         return torch.cat([tx_ty, tw_th], 1), outatt4
 
 feature_chanel = 512
-patch_grid = 3
+patch_grid = 7
 k = 3
 # print("Starting image processing... before load model")
 # checkpoint = torch.load('/opt/project/tmp/best_checkpoint.pth.tar')
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231117.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/test_checkpoint20231203.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -145,7 +145,7 @@ transform_pipeline = transforms.Compose([
 ])
 
 # Masking image ==============================================================================================================================
-def apply_masks_and_save(image, boxes, x_scale, y_scale, focus):
+def apply_masks_and_save(image, boxes, focus):
     # Make a copy of the image to keep the original intact
     masked_image = image.copy()
     count = 0
@@ -153,16 +153,16 @@ def apply_masks_and_save(image, boxes, x_scale, y_scale, focus):
     for box in boxes:
         # Scale the box coordinates
         center_x, center_y, box_width, box_height = box
-        center_x_scaled = int(center_x * x_scale)
-        center_y_scaled = int(center_y * y_scale)
-        box_width_scaled = int(box_width * x_scale)
-        box_height_scaled = int(box_height * y_scale)
+        center_x_scaled = int(center_x)
+        center_y_scaled = int(center_y)
+        box_width_scaled = int(box_width)
+        box_height_scaled = int(box_height)
 
         # Convert to top-left and bottom-right coordinates
-        top_left_x = max(center_x_scaled - box_width_scaled // 2, 0)
-        top_left_y = max(center_y_scaled - box_height_scaled // 2, 0)
-        bottom_right_x = min(center_x_scaled + box_width_scaled // 2, masked_image.shape[1] - 1)
-        bottom_right_y = min(center_y_scaled + box_height_scaled // 2, masked_image.shape[0] - 1)
+        top_left_x = int(center_x_scaled - box_width_scaled // 2)
+        top_left_y = int(center_y_scaled - box_height_scaled // 2)
+        bottom_right_x = int(center_x_scaled + box_width_scaled // 2)
+        bottom_right_y = int(center_y_scaled + box_height_scaled // 2)
         
         if focus[count][0] == 1:
             # Apply the mask
@@ -187,7 +187,7 @@ for filename in os.listdir(images_path):
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
-        focus = close_outputs.reshape(27,1).tolist()
+        focus = close_outputs.reshape(patch_grid**k,1).tolist()
         
         # print("Predict t")
         tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
@@ -196,20 +196,23 @@ for filename in os.listdir(images_path):
         th = outputs[:, 7:k*4:2, :, :].detach().numpy()
         # print(tx)
         
-        conv_height, conv_width = conv_features.shape[-2:]
-        patch_width = conv_width // patch_grid
-        patch_height = conv_height // patch_grid
+        # conv_height, conv_width = conv_features.shape[-2:]
+        # patch_width = conv_width // patch_grid
+        # patch_height = conv_height // patch_grid
         
         original_width, original_height = image1.size
-        x_scale = original_width / conv_width
-        y_scale = original_height / conv_height
+        patch_width = original_width / patch_grid
+        patch_height = original_height / patch_grid
+        # print(original_width, original_height)
+        # print(original_image.shape)
         
         # print("Go to mask in each box")
         anchor_boxes = []
         for i in range(patch_grid):
             for j in range(patch_grid):
-                xa, ya = j * patch_width + patch_width / 2, i * patch_height + patch_height / 2
-                wa, ha = patch_width / 2, patch_height / 2
+
+                xa, ya = (j * patch_width) + (patch_width / 2), (i * patch_height) + (patch_height / 2)
+                wa, ha = patch_width, patch_height
 
                 for anchor in range(k):
                     tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
@@ -219,8 +222,8 @@ for filename in os.listdir(images_path):
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
         # print(anchor_boxes)
-        masked_image = apply_masks_and_save(original_image, anchor_boxes, x_scale, y_scale, focus)
-        cv2.imwrite('/opt/project/tmp/TestAnchor4{}'.format(filename), masked_image)
+        masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
+        cv2.imwrite('/opt/project/tmp/TestAnchor6{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
