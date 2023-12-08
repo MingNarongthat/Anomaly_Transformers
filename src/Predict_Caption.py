@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # images_path = "/opt/project/dataset/Flooding/"
 
-images_path = "/opt/project/dataset/DataAll/Testing/"
+images_path = "/opt/project/dataset/Image/Experiments/"
 
 # Load the pre-trained image captioning model and tokenizer
 t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
@@ -41,7 +41,7 @@ for filename in os.listdir(images_path):
                                              return_tensors="tf")
         # extract token array
         token_ids = tokenized_caption.numpy()[0]
-
+        print(filename, caption_without_special_tokens)
         # Add the filename and caption to the results list
         results.append({"filename": filename, "caption": caption_without_special_tokens})
 
@@ -62,4 +62,4 @@ df = pd.DataFrame(results)
 
 # df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
 
-df.to_excel("/opt/project/dataset/experiment1_crop_vs_masked3.xlsx", index=False)
+df.to_excel("/opt/project/dataset/experiment1_crop_vs_masked4.xlsx", index=False)

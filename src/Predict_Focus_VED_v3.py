@@ -78,7 +78,7 @@ class AnchorBoxPredictor(nn.Module):
         )
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
         self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
-        self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
+        self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
             nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
             nn.ReLU()
@@ -132,7 +132,7 @@ vgg16_model.eval()
 # feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 # tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
