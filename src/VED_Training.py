@@ -47,7 +47,7 @@ feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 # Read json file containing the image name and captioning
-with open("/opt/project/dataset/caption_dataset_normal_v1.2.json", 'r') as f:
+with open("/opt/project/dataset/caption_dataset_training_v2.json", 'r') as f:
     datastore = json.load(f)
 
 # Preparing training and testing set
@@ -177,7 +177,7 @@ trainer = Trainer(
 )
 # Fine-tune the model, training and evaluating on the train dataset ----------------------------------------------------
 trainer.train()
-trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_normal_v1.2')
+trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_classification_V3')
 
 # Get finish date and time
 end_time = datetime.datetime.now()
@@ -188,5 +188,5 @@ csv_file = "/opt/project/tmp/training_log.csv"
 with open(csv_file, "a") as file:
     writer = csv.writer(file)
     writer.writerow(["Script Name", "Start Time", "End Time"])
-    writer.writerow(["VED_Training.py", start_time_str, end_time_str])
+    writer.writerow(["VED_Training1.py", start_time_str, end_time_str])
 

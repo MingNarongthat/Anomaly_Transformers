@@ -4,10 +4,10 @@ import pandas as pd
 # read data from excel
 filename_input = '/opt/project/dataset/dataset_train_testv1.xlsx'
 # filename_output = '/opt/project/dataset/focus_caption_dataset_training_v1.json'
-filename_output = '/opt/project/dataset/focus_caption_dataset_trainsmall_v1.json'
+filename_output = '/opt/project/dataset/focus_caption_dataset_training_v2.json'
 
 
-df = pd.read_excel(filename_input, sheet_name="Trainingsmall")
+df = pd.read_excel(filename_input, sheet_name="Trainingv2")
 
 all_data = []
 # for i in range(30):
