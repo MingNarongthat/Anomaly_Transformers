@@ -88,7 +88,7 @@ class AnchorBoxPredictor(nn.Module):
         )
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
         self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
-        self.tanh = nn.Tanh()  # to ensure tw, th can be negative as well
+        self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
             nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
             nn.ReLU()
@@ -104,7 +104,7 @@ class AnchorBoxPredictor(nn.Module):
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
         outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.5).float()
+        outatt4 = (outatt4 > 0.3).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)
@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/test_checkpoint20231117.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/test_checkpoint20231204.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -199,7 +199,7 @@ vgg16_model = models.vgg16(pretrained=True).features
 vgg16_model.eval()
 
 # Load VED model ==============================================================================================================================
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
 feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 
