@@ -77,7 +77,7 @@ class AnchorBoxPredictor(nn.Module):
             nn.ReLU()
         )
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
-        self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
+        self.sigmoid = nn.Tanh()  # to ensure tx, ty are between 0 and 1
         self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
             nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
@@ -118,7 +118,7 @@ k = 3
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/test_checkpoint20231203.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231213.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -173,7 +173,7 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-images_path = '/opt/project/dataset/Image/Testing/anomaly/'
+images_path = '/opt/project/dataset/Image/Testing/normal/'
 print("Starting image processing...")
 # masked_image = original_image.copy()
 # Loop through all the files in the images folder
@@ -187,6 +187,8 @@ for filename in os.listdir(images_path):
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
+            print(outputs.shape)
+            print(close_outputs.shape)
         focus = close_outputs.reshape(patch_grid**k,1).tolist()
         
         # print("Predict t")
@@ -216,14 +218,14 @@ for filename in os.listdir(images_path):
 
                 for anchor in range(k):
                     tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
-                    x = xa + tx1 * wa
-                    y = ya + ty1 * ha
+                    x = xa + tx1 * wa/2
+                    y = ya + ty1 * ha/2
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
-        # print(anchor_boxes)
+        print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        cv2.imwrite('/opt/project/tmp/TestAnchor6{}'.format(filename), masked_image)
+        cv2.imwrite('/opt/project/tmp/TestAnchor8{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])

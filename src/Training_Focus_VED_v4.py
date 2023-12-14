@@ -87,10 +87,10 @@ class AnchorBoxPredictor(nn.Module):
             nn.ReLU()
         )
         self.adaptive_pool = nn.AdaptiveAvgPool2d((patch_size, patch_size))
-        self.sigmoid = nn.Sigmoid()  # to ensure tx, ty are between 0 and 1
+        self.sigmoid = nn.Tanh()  # to ensure tx, ty are between 0 and 1
         self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
-            nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(num_anchors * 4, num_anchors, kernel_size=3, stride=1, padding=1),
             nn.ReLU()
         )
 
@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231206.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231213.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -183,7 +183,7 @@ transform_pipeline = transforms.Compose([
 
 # Load JSON file
 root_dir = '/opt/project/dataset/DataAll/Training/'
-with open('/opt/project/dataset/focus_caption_dataset_trainsmall_v1.json', 'r') as file:
+with open('/opt/project/dataset/focus_caption_dataset_training_v2.json', 'r') as file:
     data = json.load(file)
     # print(len(data))
 
@@ -199,14 +199,14 @@ vgg16_model = models.vgg16(pretrained=True).features
 vgg16_model.eval()
 
 # Load VED model ==============================================================================================================================
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v2.0')
-feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+# feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+# tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 modelcosine = AutoModel.from_pretrained("bert-base-uncased")
 tokenizercosine = AutoTokenizer.from_pretrained("bert-base-uncased")
 # t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
-# feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
-# tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 optimizer = optim.Adam(model.parameters(), lr=0.0005)
@@ -243,7 +243,7 @@ def caption_similarity_loss(generated_captions, true_captions):
     # Convert similarity to a loss (1 - similarity)
     loss = 1 - similarity
 
-    return loss.mean()
+    return loss.mean().item()
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -265,12 +265,10 @@ for epoch in range(num_epochs):
     start_time_str.append(start_time.strftime("%Y-%m-%d %H:%M:%S"))
     model.train()
     for idx in range(len(train_data)):
-        if idx%5 == 0:
-            count = count + idx
+        count = count + idx
+        if idx%50 == 0:
             count1 = count / len(train_data)*100
             print("start new data. Progress >>>> {}".format(count1))
-        else:
-            count = count + idx
         # Print the shape of the images for debugging
         # print(f"Images shape before processing: {images.shape}")
         original_image = cv2.imread(os.path.join(images_path, train_data[idx]["image"]))
@@ -307,8 +305,8 @@ for epoch in range(num_epochs):
 
                 for anchor in range(k):
                     tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
-                    x = xa + tx1 * wa
-                    y = ya + ty1 * ha
+                    x = xa + tx1 * wa/2
+                    y = ya + ty1 * ha/2
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
@@ -371,8 +369,8 @@ for epoch in range(num_epochs):
 
                     for anchor in range(k):
                         tx1, ty1, tw1, th1 = tx[0][anchor][i][j], ty[0][anchor][i][j], tw[0][anchor][i][j], th[0][anchor][i][j]
-                        x = xa + tx1 * wa
-                        y = ya + ty1 * ha
+                        x = xa + tx1 * wa/2
+                        y = ya + ty1 * ha/2
                         w = wa * np.exp(tw1)
                         h = ha * np.exp(th1)
                         anchor_boxes.append((x, y, w, h))
@@ -410,7 +408,7 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus4.csv"
+    csv_file = "/opt/project/tmp/training_logFocus5.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
