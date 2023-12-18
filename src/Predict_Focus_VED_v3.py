@@ -80,7 +80,7 @@ class AnchorBoxPredictor(nn.Module):
         self.sigmoid = nn.Tanh()  # to ensure tx, ty are between 0 and 1
         self.tanh = nn.ReLU()  # to ensure tw, th can be negative as well
         self.conv1 = nn.Sequential(
-            nn.Conv2d(num_anchors * 4, patch_size, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(num_anchors * 4, num_anchors, kernel_size=3, stride=1, padding=1),
             nn.ReLU()
         )
 
@@ -118,7 +118,7 @@ k = 3
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231213.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231214.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -187,9 +187,10 @@ for filename in os.listdir(images_path):
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
-            print(outputs.shape)
-            print(close_outputs.shape)
-        focus = close_outputs.reshape(patch_grid**k,1).tolist()
+            # print(outputs.shape)
+            # print(close_outputs.shape)
+        # focus = close_outputs.reshape(patch_grid**k,1).tolist()
+        focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         
         # print("Predict t")
         tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
@@ -223,7 +224,7 @@ for filename in os.listdir(images_path):
                     w = wa * np.exp(tw1)
                     h = ha * np.exp(th1)
                     anchor_boxes.append((x, y, w, h))
-        print(len(anchor_boxes))
+        # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
         cv2.imwrite('/opt/project/tmp/TestAnchor8{}'.format(filename), masked_image)
 

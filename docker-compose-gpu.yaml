@@ -1,8 +1,12 @@
 version: '3.8'
 services:
-  transformergpu:
+  transformergpuv2:
     build:
       dockerfile: Dockerfile-gpu
+    image: captioning-transformergpuv2
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all 
     volumes:
       - "./src/:/opt/project/src"
       - "./dataset/:/opt/project/dataset"

@@ -14,8 +14,4 @@ build:
 	docker-compose build
 
 run:
-	docker exec -it transformermodel-transformer-1 bash
-
-%:
-	@:
-
+	docker exec -it transformermodel-transformergpuv2-1 bash

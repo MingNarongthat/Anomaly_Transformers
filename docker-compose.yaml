@@ -1,14 +1,10 @@
 version: '3.8'
 services:
-  transformer:
+  transformergpu:
     build:
-#      context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-gpu
     volumes:
       - "./src/:/opt/project/src"
       - "./dataset/:/opt/project/dataset"
+      - "./tmp/:/opt/project/tmp"
     tty: true
-
-
-
-
