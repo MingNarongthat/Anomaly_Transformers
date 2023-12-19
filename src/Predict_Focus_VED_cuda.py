@@ -113,9 +113,20 @@ class AnchorBoxPredictor(nn.Module):
 feature_chanel = 512
 patch_grid = 7
 k = 3
+
+# If there's a GPU available
+if torch.cuda.is_available():
+    # Tell PyTorch to use the GPU.
+    device = torch.device("cuda")
+    print('There are %d GPU(s) available.' % torch.cuda.device_count())
+    print('We will use the GPU:', torch.cuda.get_device_name(0))
+else:
+    print('No GPU available, please check your server configuration.')
+    exit()
+    
 # print("Starting image processing... before load model")
 # checkpoint = torch.load('/opt/project/tmp/best_checkpoint.pth.tar')
-model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
+model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid).to(device)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
 checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231219.pth.tar')
@@ -125,6 +136,7 @@ model.eval()
 # print("Starting image processing... before load VGG")
 # Define VGG16 model
 vgg16_model = models.vgg16(pretrained=True).features
+vgg16_model = vgg16_model.to(device)  # Move VGG16 model to the GPU
 vgg16_model.eval()
 
 # Load VED model ==============================================================================================================================
@@ -143,7 +155,7 @@ transform_pipeline = transforms.Compose([
     transforms.ToTensor(),  # Convert to tensor
     transforms.Normalize((0.5,), (0.5,))  # Normalize like VGG16 expects
 ])
-
+    
 # Masking image ==============================================================================================================================
 def apply_masks_and_save(image, boxes, focus):
     # Make a copy of the image to keep the original intact
@@ -173,7 +185,7 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-images_path = '/opt/project/dataset/Image/Testing/normal/'
+images_path = '/opt/project/dataset/Image/Testing/anomaly/'
 print("Starting image processing...")
 # masked_image = original_image.copy()
 # Loop through all the files in the images folder
@@ -183,7 +195,7 @@ for filename in os.listdir(images_path):
         original_image = cv2.imread(os.path.join(images_path, filename))
         image1 = Image.open(os.path.join(images_path, filename)).convert("RGB")
         image = transform_pipeline(image1)
-        image = image.unsqueeze(0)
+        image = image.unsqueeze(0).to(device)
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
@@ -193,10 +205,10 @@ for filename in os.listdir(images_path):
         focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         
         # print("Predict t")
-        tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
-        ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
-        tw = outputs[:, 6:k*4:2, :, :].detach().numpy()
-        th = outputs[:, 7:k*4:2, :, :].detach().numpy()
+        tx = outputs[:, 0:k*2:2, :, :].detach().cpu().numpy()
+        ty = outputs[:, 1:k*2:2, :, :].detach().cpu().numpy()
+        tw = outputs[:, 6:k*4:2, :, :].detach().cpu().numpy()
+        th = outputs[:, 7:k*4:2, :, :].detach().cpu().numpy()
         # print(tx)
         
         # conv_height, conv_width = conv_features.shape[-2:]

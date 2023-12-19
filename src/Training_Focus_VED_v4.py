@@ -10,6 +10,8 @@ from torchvision import models, transforms
 from torchvision.transforms.functional import to_pil_image
 from PIL import Image
 import numpy as np
+from nltk.translate.bleu_score import sentence_bleu
+from nltk.tokenize import word_tokenize
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from torch.utils.data import Dataset, DataLoader
@@ -149,18 +151,8 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-# Compute BLEU score ==============================================================================================================================
-def compute_bleu(pred, gt):
-    bleu = evaluate.load("google_bleu")
-    pred_list = [pred]
-    gt_list = [[gt]]
-
-    bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
-    
-    return bleu_score["google_bleu"]
-
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231213.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231216.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -211,28 +203,26 @@ tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
-# BLEU score calculation for loss in this model
-def calculate_loss(image, gt_caption):
-    # Load and preprocess the image
-        image_param = Image.open(os.path.join(image)).convert("RGB")
-        
-        caption = tokenizer.decode(t.generate(feature_extractor(image_param, return_tensors="pt").pixel_values)[0])
+for param in model.parameters():
+    print(param.requires_grad)
 
-        # Remove [CLS] and [SEP] tokens from the caption
-        tokens = caption.split()
-        tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
-        caption_without_special_tokens = " ".join(tokens_without_special_tokens)
-        
-        bleu_score = 100 - compute_bleu(caption_without_special_tokens, gt_caption)*100
-        
-        return bleu_score
+# BLEU score calculation for loss in this model
+# def calculate_bleu_score(generated_caption, reference_caption):
+#     # Tokenizing the captions
+#     reference_tokens = [word_tokenize(reference_caption.lower())]  # Note the single-item list
+#     generated_tokens = word_tokenize(generated_caption.lower())
+
+#     # Calculating the BLEU score
+#     bleu_score = sentence_bleu(reference_tokens, generated_tokens)
+
+#     return bleu_score
 
 cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
 
 def caption_similarity_loss(generated_captions, true_captions):
     # Tokenize and encode captions for the language model
-    gen_encodings = tokenizercosine(generated_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
-    true_encodings = tokenizercosine(true_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
+    gen_encodings = tokenizercosine(generated_captions, padding=True, truncation=True, max_length=32, return_tensors='pt')
+    true_encodings = tokenizercosine(true_captions, padding=True, truncation=True, max_length=32, return_tensors='pt')
 
     # Generate embeddings
     gen_embeddings = modelcosine(**gen_encodings).last_hidden_state.mean(dim=1)
@@ -243,7 +233,21 @@ def caption_similarity_loss(generated_captions, true_captions):
     # Convert similarity to a loss (1 - similarity)
     loss = 1 - similarity
 
-    return loss.mean().item()
+    return loss.mean()
+
+
+def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0):
+    # Caption Similarity Term
+    caption_similarity_loss = caption_similarity_loss(generated_captions, original_captions)
+
+    # Regularization Term (example: L2 regularization)
+    l2_reg = sum(p.pow(2.0).sum() for p in model.parameters())
+
+    # Combine the losses
+    total_loss = alpha * caption_similarity_loss + beta * l2_reg
+
+    return total_loss
+
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -258,17 +262,15 @@ avg_loss_count = []
 images_path = '/opt/project/dataset/DataAll/Training/'
 # Training and validation loop
 for epoch in range(num_epochs):
-    count = 0
     print("================== start epoch ==================")
     # Get current date and time
     start_time = datetime.datetime.now(tz=pytz.timezone('Asia/Tokyo'))
     start_time_str.append(start_time.strftime("%Y-%m-%d %H:%M:%S"))
     model.train()
     for idx in range(len(train_data)):
-        count = count + idx
         if idx%50 == 0:
-            count1 = count / len(train_data)*100
-            print("start new data. Progress >>>> {}".format(count1))
+            count1 = idx / len(train_data)*100
+            print(idx, "start new data. Progress >>>> {}".format(count1))
         # Print the shape of the images for debugging
         # print(f"Images shape before processing: {images.shape}")
         original_image = cv2.imread(os.path.join(images_path, train_data[idx]["image"]))
@@ -285,8 +287,10 @@ for epoch in range(num_epochs):
             conv_features = vgg16_model(image)
         # conv_features = transition_layer(conv_features)  # Adjusting channels to 1024
         outputs, close_outputs = model(conv_features)  # Get the model outputs
-        focus = close_outputs.reshape(patch_grid**k,1).tolist()
+        # focus = close_outputs.reshape(patch_grid**k,1).tolist()
+        focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         # print(outputs.shape)
+        # print(len(focus))
             
         tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
         ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
@@ -326,9 +330,11 @@ for epoch in range(num_epochs):
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
         # loss = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
-        loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+        # loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+        loss = custom_loss_function(caption_without_special_tokens, train_data[idx]["caption"], model)
+        print(loss)
         # Backward pass and optimize
-        # optimizer.zero_grad()
+        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
@@ -350,7 +356,8 @@ for epoch in range(num_epochs):
                 conv_features = vgg16_model(image)
             # Forward pass
             outputs, close_outputs = model(conv_features)  # Get the model outputs
-            focus = close_outputs.reshape(patch_grid**k,1).tolist()
+            # focus = close_outputs.reshape(patch_grid**k,1).tolist()
+            focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
             
             tx = outputs[:, 0:k*2:2, :, :].detach().numpy()
             ty = outputs[:, 1:k*2:2, :, :].detach().numpy()
@@ -389,7 +396,8 @@ for epoch in range(num_epochs):
             caption_without_special_tokens = " ".join(tokens_without_special_tokens)
 
             # loss = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
-            loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+            # loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+            loss = custom_loss_function(caption_without_special_tokens, train_data[idx]["caption"], model)
             total_bleu_score = total_bleu_score+loss
 
     avg_loss = total_bleu_score/len(val_data)
@@ -408,7 +416,7 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus5.csv"
+    csv_file = "/opt/project/tmp/training_logFocus8.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])

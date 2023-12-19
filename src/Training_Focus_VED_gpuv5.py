@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231219.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231220.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -193,7 +193,7 @@ else:
     
 # Load JSON file
 root_dir = '/opt/project/dataset/DataAll/Training/'
-with open('/opt/project/dataset/focus_caption_dataset_training_v2.json', 'r') as file:
+with open('/opt/project/dataset/focus_caption_dataset_training_v1.json', 'r') as file:
     data = json.load(file)
     # print(len(data))
 
@@ -258,6 +258,18 @@ def caption_similarity_loss(generated_captions, true_captions):
     loss = 1 - similarity
 
     return loss.mean()
+
+def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0):
+    # Caption Similarity Term
+    caption_similarity = caption_similarity_loss(generated_captions, original_captions)
+
+    # Regularization Term (example: L2 regularization)
+    l2_reg = sum(p.pow(2.0).sum() for p in model.parameters())
+
+    # Combine the losses
+    total_loss = alpha * caption_similarity + beta * l2_reg
+
+    return total_loss
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -340,8 +352,10 @@ for epoch in range(num_epochs):
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
         # loss = 100 - compute_bleu(caption_without_special_tokens, train_data[idx]["caption"])*100
-        loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+        # loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+        loss = combined_custom_loss(caption_without_special_tokens, train_data[idx]["caption"], model)
         # Backward pass and optimize
+        print(loss)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -404,7 +418,8 @@ for epoch in range(num_epochs):
             caption_without_special_tokens = " ".join(tokens_without_special_tokens)
 
             # loss = 100 - compute_bleu(caption_without_special_tokens, val_data[idy]["caption"])*100
-            loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+            # loss = caption_similarity_loss(caption_without_special_tokens, train_data[idx]["caption"])
+            loss = combined_custom_loss(caption_without_special_tokens, train_data[idx]["caption"], model)
             total_bleu_score = total_bleu_score+loss
 
     avg_loss = total_bleu_score/len(val_data)
@@ -423,9 +438,9 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus9.csv"
+    csv_file = "/opt/project/tmp/training_logFocus10.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5lossl2.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
