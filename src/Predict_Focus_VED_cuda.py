@@ -94,7 +94,7 @@ class AnchorBoxPredictor(nn.Module):
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
         outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.5).float()
+        outatt4 = (outatt4 > 0.6).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)

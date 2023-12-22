@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231220.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20231222.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -259,7 +259,7 @@ def caption_similarity_loss(generated_captions, true_captions):
 
     return loss.mean()
 
-def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0):
+def combined_custom_loss(generated_captions, original_captions, model, alpha=0, beta=1.0, gamma=1.0):
     # Caption Similarity Term
     caption_similarity = caption_similarity_loss(generated_captions, original_captions)
 
@@ -438,9 +438,9 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus10.csv"
+    csv_file = "/opt/project/tmp/training_logFocus11.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5lossl2.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5lossl2only.py", start_time_str[epoch], end_time_str[epoch], avg_loss])

@@ -118,7 +118,7 @@ k = 3
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231219.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231214.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -173,7 +173,7 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-images_path = '/opt/project/dataset/Image/Testing/normal/'
+images_path = '/opt/project/dataset/Image/Testing/anomaly/'
 print("Starting image processing...")
 # masked_image = original_image.copy()
 # Loop through all the files in the images folder
@@ -226,7 +226,7 @@ for filename in os.listdir(images_path):
                     anchor_boxes.append((x, y, w, h))
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        cv2.imwrite('/opt/project/tmp/TestAnchor9{}'.format(filename), masked_image)
+        cv2.imwrite('/opt/project/tmp/TestAnchor10{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
