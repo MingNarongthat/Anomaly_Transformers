@@ -9,7 +9,7 @@ import matplotlib.patches as patches
 import cv2
 import evaluate
 import pandas as pd
-from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel
+from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, AutoModel
 
 def matrix_to_tuple(matrix):
     """Converts the matrix to a tuple of tuples."""
@@ -51,14 +51,25 @@ def apply_masks_in_grid(image, focus, patch_grid, patch_width, patch_height):
         
     return masked_image
 
-def compute_bleu(pred, gt):
-    bleu = evaluate.load("google_bleu")
-    pred_list = [pred]
-    gt_list = [[gt]]
+modelcosine = AutoModel.from_pretrained("bert-base-uncased")
+tokenizercosine = AutoTokenizer.from_pretrained("bert-base-uncased")
+cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
 
-    bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
-    
-    return bleu_score["google_bleu"]
+def caption_similarity_loss(generated_captions, true_captions):
+    # Tokenize and encode captions for the language model
+    gen_encodings = tokenizercosine(generated_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
+    true_encodings = tokenizercosine(true_captions, padding=True, truncation=True, max_length=512, return_tensors='pt')
+
+    # Generate embeddings
+    gen_embeddings = modelcosine(**gen_encodings).last_hidden_state.mean(dim=1)
+    true_embeddings = modelcosine(**true_encodings).last_hidden_state.mean(dim=1)
+
+    # Calculate cosine similarity
+    similarity = cosine_similarity(gen_embeddings, true_embeddings)
+    # Convert similarity to a loss (1 - similarity)
+    loss = similarity
+
+    return loss.mean().item()
 
 t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
@@ -75,11 +86,15 @@ fill_matrix_and_store(initial_matrix, 0, 0, combinations_set)
 
 # Check the number of unique combinations
 print(len(combinations_set)) 
-# print(list(combinations_set)[:10])  # Display the size and first 5 combinations
-print(list(combinations_set)[511][0])
+print(list(combinations_set)[511])
+
+count = sum(x.count(1) for x in list(combinations_set)[511])
+print(count)
+
+
 
 patch_grid = 3
-images_path = '/opt/project/dataset/Image/Testing/anomaly/'
+images_path = '/opt/project/dataset/Image/Manual masked'
 experiment_caption = pd.read_excel('/opt/project/dataset/test_experiment_caption.xlsx', sheet_name='Sheet1')
 
 for filename in os.listdir(images_path):
@@ -106,11 +121,14 @@ for filename in os.listdir(images_path):
             tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
             caption_without_special_tokens = " ".join(tokens_without_special_tokens)
             
-            bleu_score = compute_bleu(caption_without_special_tokens, gt_caption)*100
+            bleu_score = caption_similarity_loss(caption_without_special_tokens, gt_caption)
+            
+            count_one = sum(x.count(1) for x in list(combinations_set)[p])
             
             # collect the p, bleu_score, and caption_without_special_tokens in list
-            collect.append([p, bleu_score, caption_without_special_tokens])
+            collect.append([list(combinations_set)[p],count_one , bleu_score, caption_without_special_tokens])
         
         df = pd.DataFrame(collect)
-        # save df to excel file and sheet name is image filename
-        df.to_excel("/opt/project/tmp/result_maksed_experiment.xlsx", sheet_name=filename, index=False)
+        # save df to excel file and sheet name is image filename not inluding .jpg
+        df.to_excel(os.path.join(images_path, filename.replace('.jpg', '.xlsx')), index=False)
+        
