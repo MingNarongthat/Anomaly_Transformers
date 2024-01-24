@@ -4,10 +4,10 @@ import pandas as pd
 # read data from excel
 filename_input = '/opt/project/dataset/dataset_train_testv1.xlsx'
 # filename_output = '/opt/project/dataset/focus_caption_dataset_training_v1.json'
-filename_output = '/opt/project/dataset/focus_caption_dataset_training_v2.json'
+filename_output = '/opt/project/dataset/focus_caption_dataset_testing_withclass_v3.json'
 
 
-df = pd.read_excel(filename_input, sheet_name="Trainingv2")
+df = pd.read_excel(filename_input, sheet_name="Testing")
 
 all_data = []
 # for i in range(30):
@@ -15,9 +15,16 @@ for i in range(len(df['Filename'])):
     sentense_data = df['Filename'][i]
     img_name = "{}.jpg".format(sentense_data)
     label_data = df['Caption'][i]
+    class_data = df['Label'][i]
+    # convert class_data from int to string
+    if class_data == 0:
+        class_data = 'anomaly'
+    else:
+        class_data = 'normal'
 
     context = [{"image": img_name,
-               "caption": label_data
+               "caption": label_data,
+               "class": class_data
                 }]
 
     with open(filename_output, 'w') as f:

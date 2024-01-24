@@ -4,6 +4,7 @@ import os
 from torchvision import models, transforms
 from PIL import Image
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
@@ -94,7 +95,7 @@ class AnchorBoxPredictor(nn.Module):
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
         outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.6).float()
+        outatt4 = (outatt4 > 0.5).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)
@@ -129,7 +130,7 @@ else:
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid).to(device)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231219.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231214.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -185,13 +186,14 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-images_path = '/opt/project/dataset/Image/Testing/anomaly/'
+all_data = []
+images_path = '/opt/project/dataset/ResNet50/Testing/testall/'
 print("Starting image processing...")
-# masked_image = original_image.copy()
+count_num = 0
 # Loop through all the files in the images folder
 for filename in os.listdir(images_path):
     if filename.endswith(".jpg"):
-        print("Start image")
+        print("Start image", count_num, 'of', len(os.listdir(images_path))-2)
         original_image = cv2.imread(os.path.join(images_path, filename))
         image1 = Image.open(os.path.join(images_path, filename)).convert("RGB")
         image = transform_pipeline(image1)
@@ -199,8 +201,6 @@ for filename in os.listdir(images_path):
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
             outputs, close_outputs = model(conv_features)  # Get the model outputs
-            # print(outputs.shape)
-            # print(close_outputs.shape)
         # focus = close_outputs.reshape(patch_grid**k,1).tolist()
         focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         
@@ -211,15 +211,9 @@ for filename in os.listdir(images_path):
         th = outputs[:, 7:k*4:2, :, :].detach().cpu().numpy()
         # print(tx)
         
-        # conv_height, conv_width = conv_features.shape[-2:]
-        # patch_width = conv_width // patch_grid
-        # patch_height = conv_height // patch_grid
-        
         original_width, original_height = image1.size
         patch_width = original_width / patch_grid
         patch_height = original_height / patch_grid
-        # print(original_width, original_height)
-        # print(original_image.shape)
         
         # print("Go to mask in each box")
         anchor_boxes = []
@@ -238,7 +232,7 @@ for filename in os.listdir(images_path):
                     anchor_boxes.append((x, y, w, h))
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        cv2.imwrite('/opt/project/tmp/TestAnchor9{}'.format(filename), masked_image)
+        # cv2.imwrite('/opt/project/tmp/TestAnchor9{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
@@ -248,4 +242,14 @@ for filename in os.listdir(images_path):
         tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
-        print(filename, caption_without_special_tokens)
+        # print(filename, caption_without_special_tokens)
+        
+        # add the prediction to the output dataframe
+        all_data.append({'Filename': filename, 'Caption': caption_without_special_tokens})
+        
+        count_num = count_num + 1
+        
+# save into xlsx file
+df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption'])
+df_output.to_excel('/opt/project/tmp/result_best20231214_caption.xlsx', index=False)
+        

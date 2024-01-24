@@ -131,4 +131,3 @@ for filename in os.listdir(images_path):
         df = pd.DataFrame(collect)
         # save df to excel file and sheet name is image filename not inluding .jpg
         df.to_excel(os.path.join(images_path, filename.replace('.jpg', '.xlsx')), index=False)
-        
