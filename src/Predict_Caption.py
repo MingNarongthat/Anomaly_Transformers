@@ -8,10 +8,10 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # images_path = "/opt/project/dataset/Flooding/"
 
-images_path = "/opt/project/dataset/Image/TestEx/"
+images_path = "/opt/project/dataset/ResNet50/Testing/testall/"
 
 # Load the pre-trained image captioning model and tokenizer
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_Roberta_iter2')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_V3')
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 # feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
@@ -43,7 +43,7 @@ for filename in os.listdir(images_path):
         token_ids = tokenized_caption.numpy()[0]
         print(filename, caption_without_special_tokens)
         # Add the filename and caption to the results list
-        results.append({"filename": filename, "caption": caption_without_special_tokens})
+        results.append({"Filename": filename, "Caption": caption_without_special_tokens})
 
 # Define the maximum sequence length for padding
 
@@ -60,6 +60,6 @@ df = pd.DataFrame(results)
 
 # Save the DataFrame to an xlsx file
 
-# df.to_excel("/opt/project/dataset/result_predictions_token_flooding.xlsx", index=False)
+df.to_excel("/opt/project/dataset/result_predictions_caption_our.xlsx", index=False)
 
 # df.to_excel("/opt/project/dataset/experiment1_crop_vs_masked5.xlsx", index=False)
