@@ -160,7 +160,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240124.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240127.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -255,19 +255,31 @@ def caption_similarity_loss(generated_captions, true_captions):
     # Calculate cosine similarity
     similarity = cosine_similarity(gen_embeddings, true_embeddings)
     # Convert similarity to a loss (1 - similarity)
-    loss = similarity
+    loss = 1 - similarity
 
     return loss.mean()
 
-def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0):
+def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0, theta=1.0):
     # Caption Similarity Term
     caption_similarity = caption_similarity_loss(generated_captions, original_captions)
-
+    
+    # inverse cosine similarity
+    caption_inverse_similarity = 1 - caption_similarity
+    
+    # cross entropy loss from generated caption to original caption (example: cross entropy loss from generated caption to original caption)
+    # generated_captions_flat = generated_captions.view(-1)
+    # original_captions_flat = original_captions.view(-1)
+    # loss_entropy = F.cross_entropy(generated_captions_flat, original_captions_flat)
+    
+    
     # Regularization Term (example: L2 regularization)
     l2_reg = sum(p.pow(2.0).sum() for p in model.parameters())
+    
+    # Regularization Term (example: L1 regularization)
+    l1_reg = sum(p.abs().sum() for p in model.parameters())
 
     # Combine the losses
-    total_loss = alpha * caption_similarity + beta * l2_reg
+    total_loss = alpha * caption_similarity + beta * l1_reg + gamma * caption_inverse_similarity
 
     return total_loss
 
@@ -296,10 +308,7 @@ for epoch in range(num_epochs):
         # Print the shape of the images for debugging
         # print(f"Images shape before processing: {images.shape}")
         original_image = cv2.imread(os.path.join(images_path, train_data[idx]["image"]))
-    
-        # if original_image.shape[2] == 3:  # No alpha channel
-        #     # Add an alpha channel, filled with 255 (no transparency)
-        #     original_image = np.concatenate([original_image, np.full((original_image.shape[0], original_image.shape[1], 1), 255, dtype=original_image.dtype)], axis=-1)
+
         image1 = Image.open(os.path.join(images_path, train_data[idx]["image"])).convert("RGB")
         image = transform_pipeline(image1)
         image = image.unsqueeze(0).to(device)
@@ -438,9 +447,9 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus14.csv"
+    csv_file = "/opt/project/tmp/training_logFocus16.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR2.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1consine.py", start_time_str[epoch], end_time_str[epoch], avg_loss])

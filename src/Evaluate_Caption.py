@@ -24,7 +24,7 @@ def compute_scores(ref_caption, predicted_caption):
 
 # read the excel file result_best20231214_caption.xlsx
 # df = pd.read_excel('/opt/project/tmp/result_best20231214_caption.xlsx')
-df = pd.read_excel('/Users/mingnarongthat/Documents/Ph.D./Transformer Model/tmp/result_best20231224_caption.xlsx')
+df = pd.read_excel('/Users/mingnarongthat/Documents/Ph.D./Transformer Model/dataset/result_predictions_caption_our.xlsx')
 
 # read json file focus_caption_dataset_testing_withclass_v3.json
 # with open('/opt/project/dataset/focus_caption_dataset_testing_withclass_v3.json') as f:
