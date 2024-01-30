@@ -130,7 +130,7 @@ else:
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid).to(device)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231214.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20240127.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -251,5 +251,5 @@ for filename in os.listdir(images_path):
         
 # save into xlsx file
 df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption'])
-df_output.to_excel('/opt/project/tmp/result_best20231214_caption.xlsx', index=False)
+df_output.to_excel('/opt/project/tmp/result_best20240127_caption.xlsx', index=False)
         

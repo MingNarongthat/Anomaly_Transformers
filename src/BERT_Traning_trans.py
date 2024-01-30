@@ -6,17 +6,33 @@ import tensorflow as tf
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 import json
 
-training_size = 200
+training_size = 1700
 
-with open("/opt/project/dataset/sentense_dataset_allV2.json", 'r') as f:
+with open("/opt/project/dataset/focus_caption_dataset_trainingnew_withclass_v3.json", 'r') as f:
     datastore = json.load(f)
 
 sentences = []
 labels = []
 
 for item in datastore:
-    sentences.append(item['Sentence'])
-    labels.append(item['Label'])
+    sentences.append(item['caption'])
+    labels.append(item['class'])
+    # change the label from string to integer (0 = anomaly, 1 = normal)
+    # if item['class'] == 'anomaly':
+    #     labels.append(0)
+    # elif item['class'] == 'normal':
+    #     labels.append(1)
+    # else:
+    #     print('Error')
+
+# convert labels from string to integer (0 = anomaly, 1 = normal)
+for i in range(len(labels)):
+    if labels[i] == '0':
+        labels[i] = 0
+    elif labels[i] == '1':
+        labels[i] = 1
+    else:
+        print('Error')
 
 sentences = np.array(sentences)
 labels = np.array(labels)
@@ -61,4 +77,4 @@ model.fit(train_dataset.shuffle(30).batch(16),
           epochs=100,
           batch_size=16,
           validation_data=val_dataset.shuffle(10).batch(16))
-model.save_pretrained("/opt/project/tmp/sentiment_custom_modelV2")
+model.save_pretrained("/opt/project/tmp/sentiment_custom_modelV5")

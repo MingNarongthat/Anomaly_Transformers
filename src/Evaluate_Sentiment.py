@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import os
 
-df = pd.read_excel('/opt/project/tmp/experiment_our_sentiment.xlsx')
+df = pd.read_excel('/opt/project/tmp/experiment2_best20240127_sentiment.xlsx')
 
 with open('/opt/project/dataset/focus_caption_dataset_testing_withclass_v3.json') as f:
     # read the json file as dictionary
@@ -47,13 +47,13 @@ def calculate_accuracy_precision_recall_f1score(confusion_metrix):
 
 # print accuracy, precision, recall, and f1-score
 def print_accuracy_precision_recall_f1score(accuracy, precision_anomaly, precision_normal, recall_anomaly, recall_normal, f1score_anomaly, f1score_normal):
-    print('Accuracy = ', accuracy)
+    print('Accuracy : ', accuracy)
     # print('Precision anomaly = ', precision_anomaly)
-    print('Precision normal = ', precision_normal)
+    print('Precision normal : ', precision_normal)
     # print('Recall anomaly = ', recall_anomaly)
-    print('Recall normal = ', recall_normal)
+    print('Recall normal : ', recall_normal)
     # print('F1-score anomaly = ', f1score_anomaly)
-    print('F1-score normal = ', f1score_normal)
+    print('F1-score normal : ', f1score_normal)
 
 accuracy, precision_anomaly, precision_normal, recall_anomaly, recall_normal, f1score_anomaly, f1score_normal = calculate_accuracy_precision_recall_f1score(confusion_metrix(data, df))
 print_accuracy_precision_recall_f1score(accuracy, precision_anomaly, precision_normal, recall_anomaly, recall_normal, f1score_anomaly, f1score_normal)

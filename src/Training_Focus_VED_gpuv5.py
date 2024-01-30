@@ -18,6 +18,7 @@ import torch.nn.functional as F
 import evaluate
 import torch.optim as optim
 from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, ViTImageProcessor, AutoModel
+import torch
 
 class SelfAttention(nn.Module):
     """ Self attention Layer"""
@@ -160,7 +161,7 @@ def compute_bleu(pred, gt):
     return bleu_score["google_bleu"]
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240127.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240128.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -259,18 +260,13 @@ def caption_similarity_loss(generated_captions, true_captions):
 
     return loss.mean()
 
+
 def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0, theta=1.0):
     # Caption Similarity Term
     caption_similarity = caption_similarity_loss(generated_captions, original_captions)
     
     # inverse cosine similarity
-    caption_inverse_similarity = 1 - caption_similarity
-    
-    # cross entropy loss from generated caption to original caption (example: cross entropy loss from generated caption to original caption)
-    # generated_captions_flat = generated_captions.view(-1)
-    # original_captions_flat = original_captions.view(-1)
-    # loss_entropy = F.cross_entropy(generated_captions_flat, original_captions_flat)
-    
+    caption_inverse_similarity = 1 - caption_similarity  
     
     # Regularization Term (example: L2 regularization)
     l2_reg = sum(p.pow(2.0).sum() for p in model.parameters())
@@ -447,9 +443,9 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus16.csv"
+    csv_file = "/opt/project/tmp/training_logFocus17.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1consine.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1consine_entropy.py", start_time_str[epoch], end_time_str[epoch], avg_loss])

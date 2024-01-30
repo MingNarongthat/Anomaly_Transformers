@@ -4,12 +4,12 @@ import tensorflow as tf
 import pandas as pd
 
 # read the input sentences from the XLSX file
-df_input = pd.read_excel('/opt/project/dataset/result_predictions_caption_our.xlsx')
+df_input = pd.read_excel('/opt/project/tmp/result_best20240127_caption.xlsx')
 
 # initialize the tokenizer and loaded model
 tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
 # tokenizer = DistilBertTokenizerFast.from_pretrained('bert-base-uncased')
-loaded_model = TFDistilBertForSequenceClassification.from_pretrained("/opt/project/tmp/sentiment_custom_modelV2")
+loaded_model = TFDistilBertForSequenceClassification.from_pretrained("/opt/project/tmp/sentiment_custom_modelV4")
 
 # create a new dataframe to store the predictions
 df_output = pd.DataFrame(columns=['Filename', 'Sentiment'])
@@ -37,4 +37,4 @@ for sentence in df_input['Caption']:
     filename_count += 1
 
 # write the output dataframe to an XLSX file
-df_output.to_excel('/opt/project/tmp/experiment_our_sentiment.xlsx', index=False)
+df_output.to_excel('/opt/project/tmp/experiment2_best20240127_sentiment.xlsx', index=False)
