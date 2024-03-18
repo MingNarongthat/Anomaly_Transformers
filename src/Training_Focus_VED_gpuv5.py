@@ -115,8 +115,8 @@ class AnchorBoxPredictor(nn.Module):
         num_anchors = 3
         # Split the output into the tx, ty (which we pass through a sigmoid) and tw, th (which we pass through a tanh)
         tx_ty, tw_th = torch.split(out5, num_anchors * 2, 1)
-        tx_ty = self.sigmoid(tx_ty)
-        tw_th = self.tanh(tw_th)
+        tx_ty = self.sigmoid(tx_ty) # tanh
+        tw_th = self.tanh(tw_th) # 
         
         # return out
         return torch.cat([tx_ty, tw_th], 1), outatt4
@@ -150,18 +150,8 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-# Compute BLEU score ==============================================================================================================================
-def compute_bleu(pred, gt):
-    bleu = evaluate.load("google_bleu")
-    pred_list = [pred]
-    gt_list = [[gt]]
-
-    bleu_score = bleu.compute(predictions=pred_list, references=gt_list)
-    
-    return bleu_score["google_bleu"]
-
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240128.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240219.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -171,7 +161,7 @@ best_loss = float('inf')
 feature_chanel = 512
 k = 3  # Number of anchor boxes
 patch_grid = 7
-num_epochs = 30
+num_epochs = 12
 # ==============================================================================================================================
 # Define the transformations to preprocess the image
 transform_pipeline = transforms.Compose([
@@ -181,7 +171,7 @@ transform_pipeline = transforms.Compose([
 ])
 
 # Data preparation ==============================================================================================================================
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # Use the fourth GPU
 # If there's a GPU available
 if torch.cuda.is_available():
     # Tell PyTorch to use the GPU.
@@ -189,12 +179,13 @@ if torch.cuda.is_available():
     print('There are %d GPU(s) available.' % torch.cuda.device_count())
     print('We will use the GPU:', torch.cuda.get_device_name(0))
 else:
+    device = torch.device("cpu")
     print('No GPU available, please check your server configuration.')
     exit()
     
 # Load JSON file
 root_dir = '/opt/project/dataset/DataAll/Training/'
-with open('/opt/project/dataset/focus_caption_dataset_training_v1.json', 'r') as file:
+with open('/opt/project/dataset/focus_caption_dataset_trainingfinetune_withclass_v3.json', 'r') as file:
     data = json.load(file)
     # print(len(data))
 
@@ -211,7 +202,7 @@ vgg16_model = vgg16_model.to(device)  # Move VGG16 model to the GPU
 vgg16_model.eval()
 
 # Load VED model ==============================================================================================================================
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_V1.3')
 # feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 # tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 modelcosine = AutoModel.from_pretrained("bert-base-uncased")
@@ -221,26 +212,18 @@ feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid).to(device)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0005)
+
+# Load the model
+checkpoint_path = "/opt/project/tmp/best_checkpoint20240202.pth.tar"
+checkpoint = torch.load(checkpoint_path)
+model.load_state_dict(checkpoint['state_dict'])
+
+# Continue fine-tuning the model with other data
+# ...
 
 for param in model.parameters():
     print(param.requires_grad)
-
-# BLEU score calculation for loss in this model
-def calculate_loss(image, gt_caption):
-    # Load and preprocess the image
-        image_param = Image.open(os.path.join(image)).convert("RGB")
-        
-        caption = tokenizer.decode(t.generate(feature_extractor(image_param, return_tensors="pt").pixel_values)[0])
-
-        # Remove [CLS] and [SEP] tokens from the caption
-        tokens = caption.split()
-        tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
-        caption_without_special_tokens = " ".join(tokens_without_special_tokens)
-        
-        bleu_score = 100 - compute_bleu(caption_without_special_tokens, gt_caption)*100
-        
-        return bleu_score
 
 cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
 
@@ -256,12 +239,12 @@ def caption_similarity_loss(generated_captions, true_captions):
     # Calculate cosine similarity
     similarity = cosine_similarity(gen_embeddings, true_embeddings)
     # Convert similarity to a loss (1 - similarity)
-    loss = 1 - similarity
+    loss = similarity
 
     return loss.mean()
 
 
-def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=1.0, gamma=1.0, theta=1.0):
+def combined_custom_loss(generated_captions, original_captions, model, alpha=0.0, beta=1.0, gamma=1.0, theta=1.0):
     # Caption Similarity Term
     caption_similarity = caption_similarity_loss(generated_captions, original_captions)
     
@@ -443,9 +426,10 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus17.csv"
+    csv_file = "/opt/project/tmp/training_logFocus25.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1consine_entropy.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1_lr0005_finetune3.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            

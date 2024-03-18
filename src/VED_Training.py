@@ -5,6 +5,7 @@ from torch.utils.data.dataset import Dataset
 import random
 from PIL import Image
 import json
+import os
 
 # Decoder
 from transformers import default_data_collator
@@ -22,6 +23,7 @@ import csv
 start_time = datetime.datetime.now()
 start_time_str = start_time.strftime("%Y-%m-%d %H:%M:%S")
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # If there's a GPU available
 if torch.cuda.is_available():
 
@@ -41,13 +43,14 @@ images_path = "/opt/project/dataset/DataAll/Training/"
 train_test_ratio = 0.1
 
 # Load the pre-trained image captioning model and tokenizer
-model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained\
-                                    ("google/vit-base-patch16-224-in21k", 'bert-base-uncased', tie_encoder_decoder=True)
+model = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+# model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained\
+#                                     ("google/vit-base-patch16-224-in21k", 'bert-base-uncased', tie_encoder_decoder=True)
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 # Read json file containing the image name and captioning
-with open("/opt/project/dataset/caption_dataset_training_v2.json", 'r') as f:
+with open("/opt/project/dataset/focus_caption_dataset_trainingfinetune_withclass_v3.json", 'r') as f:
     datastore = json.load(f)
 
 # Preparing training and testing set
@@ -160,7 +163,7 @@ training_args = TrainingArguments(
     logging_steps=1024,
     save_steps=2048,
     warmup_steps=1024,
-    num_train_epochs=10,  # TRAIN_EPOCHS
+    num_train_epochs=30,  # TRAIN_EPOCHS
     overwrite_output_dir=True,
     save_total_limit=1,
 )
@@ -177,7 +180,7 @@ trainer = Trainer(
 )
 # Fine-tune the model, training and evaluating on the train dataset ----------------------------------------------------
 trainer.train()
-trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_classification_V3')
+trainer.save_model('/opt/project/tmp/Image_Cationing_VIT_classification_V1.3')
 
 # Get finish date and time
 end_time = datetime.datetime.now()
@@ -188,5 +191,5 @@ csv_file = "/opt/project/tmp/training_log.csv"
 with open(csv_file, "a") as file:
     writer = csv.writer(file)
     writer.writerow(["Script Name", "Start Time", "End Time"])
-    writer.writerow(["VED_Training1.py", start_time_str, end_time_str])
+    writer.writerow(["VED_Training2.py", start_time_str, end_time_str])
 

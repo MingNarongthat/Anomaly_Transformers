@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import os
 
-df = pd.read_excel('/opt/project/tmp/experiment2_best20240127_sentiment.xlsx')
+df = pd.read_excel('/opt/project/tmp/experiment_best20240202_sentiment.xlsx')
 
 with open('/opt/project/dataset/focus_caption_dataset_testing_withclass_v3.json') as f:
     # read the json file as dictionary
@@ -57,5 +57,3 @@ def print_accuracy_precision_recall_f1score(accuracy, precision_anomaly, precisi
 
 accuracy, precision_anomaly, precision_normal, recall_anomaly, recall_normal, f1score_anomaly, f1score_normal = calculate_accuracy_precision_recall_f1score(confusion_metrix(data, df))
 print_accuracy_precision_recall_f1score(accuracy, precision_anomaly, precision_normal, recall_anomaly, recall_normal, f1score_anomaly, f1score_normal)
-
-

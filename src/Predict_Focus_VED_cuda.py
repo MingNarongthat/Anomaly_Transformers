@@ -95,7 +95,7 @@ class AnchorBoxPredictor(nn.Module):
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
         outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.5).float()
+        outatt4 = (outatt4 > 0.4).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)
@@ -115,6 +115,7 @@ feature_chanel = 512
 patch_grid = 7
 k = 3
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # Use the fourth GPU
 # If there's a GPU available
 if torch.cuda.is_available():
     # Tell PyTorch to use the GPU.
@@ -130,7 +131,7 @@ else:
 model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_size=patch_grid).to(device)
 # Extract and load the model weights
 # model.load_state_dict(torch.load('/opt/project/tmp/best_checkpoint.pth'))
-checkpoint = torch.load('/opt/project/tmp/best_checkpoint20240127.pth.tar')
+checkpoint = torch.load('/opt/project/tmp/best_checkpoint20231224.pth.tar')
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -187,7 +188,7 @@ def apply_masks_and_save(image, boxes, focus):
     return masked_image
 
 all_data = []
-images_path = '/opt/project/dataset/ResNet50/Testing/testall/'
+images_path = '/opt/project/dataset/Image/IROS_Test/'
 print("Starting image processing...")
 count_num = 0
 # Loop through all the files in the images folder
@@ -232,10 +233,16 @@ for filename in os.listdir(images_path):
                     anchor_boxes.append((x, y, w, h))
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        # cv2.imwrite('/opt/project/tmp/TestAnchor9{}'.format(filename), masked_image)
+        print(focus)
+        cv2.imwrite('/opt/project/tmp/Masked{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
+        
+        caption2 = tokenizer.decode(t.generate(feature_extractor(original_image, return_tensors="pt").pixel_values)[0])
+        tokens2 = caption2.split()
+        tokens_without_special_tokens2 = [token2 for token2 in tokens2 if token2 not in ["[CLS]", "[SEP]"]]
+        caption_without_special_tokens2 = " ".join(tokens_without_special_tokens2)
 
         # Remove [CLS] and [SEP] tokens from the caption
         tokens = caption.split()
@@ -245,11 +252,11 @@ for filename in os.listdir(images_path):
         # print(filename, caption_without_special_tokens)
         
         # add the prediction to the output dataframe
-        all_data.append({'Filename': filename, 'Caption': caption_without_special_tokens})
+        all_data.append({'Filename': filename, 'Caption': caption_without_special_tokens, 'Original': caption_without_special_tokens2})
         
         count_num = count_num + 1
         
 # save into xlsx file
-df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption'])
-df_output.to_excel('/opt/project/tmp/result_best20240127_caption.xlsx', index=False)
+df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption','Original'])
+df_output.to_excel('/opt/project/tmp/result_IROSTest_caption.xlsx', index=False)
         

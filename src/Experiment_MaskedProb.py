@@ -71,7 +71,7 @@ def caption_similarity_loss(generated_captions, true_captions):
 
     return loss.mean().item()
 
-t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+t = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v3')
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
@@ -130,4 +130,5 @@ for filename in os.listdir(images_path):
         
         df = pd.DataFrame(collect)
         # save df to excel file and sheet name is image filename not inluding .jpg
+        # print(filename, caption_without_special_tokens)
         df.to_excel(os.path.join(images_path, filename.replace('.jpg', '.xlsx')), index=False)

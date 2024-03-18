@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
+import pandas as pd
 from transformers import ViTFeatureExtractor, AutoTokenizer, VisionEncoderDecoderModel, ViTImageProcessor
 
 class SelfAttention(nn.Module):
@@ -173,7 +174,8 @@ def apply_masks_and_save(image, boxes, focus):
         
     return masked_image
 
-images_path = '/opt/project/dataset/Image/Testing/anomaly/'
+all_data = []
+images_path = '/opt/project/dataset/Image/Manual masked/IROS/'
 print("Starting image processing...")
 # masked_image = original_image.copy()
 # Loop through all the files in the images folder
@@ -226,7 +228,7 @@ for filename in os.listdir(images_path):
                     anchor_boxes.append((x, y, w, h))
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        cv2.imwrite('/opt/project/tmp/TestAnchor10{}'.format(filename), masked_image)
+        # cv2.imwrite('/opt/project/tmp/TestAnchor10{}'.format(filename), masked_image)
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
@@ -236,4 +238,7 @@ for filename in os.listdir(images_path):
         tokens_without_special_tokens = [token for token in tokens if token not in ["[CLS]", "[SEP]"]]
         caption_without_special_tokens = " ".join(tokens_without_special_tokens)
         
-        print(filename, caption_without_special_tokens)
+        all_data.append({'Filename': filename, 'Caption': caption_without_special_tokens})
+
+df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption'])
+df_output.to_excel('/opt/project/tmp/result_IROS_caption.xlsx', index=False)

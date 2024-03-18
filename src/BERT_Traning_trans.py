@@ -6,9 +6,9 @@ import tensorflow as tf
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 import json
 
-training_size = 1700
+training_size = 480
 
-with open("/opt/project/dataset/focus_caption_dataset_trainingnew_withclass_v3.json", 'r') as f:
+with open("/opt/project/dataset/focus_caption_dataset_trainingfinetune_withclass_v3.json", 'r') as f:
     datastore = json.load(f)
 
 sentences = []
@@ -67,7 +67,7 @@ val_dataset = tf.data.Dataset.from_tensor_slices((
     validation_labels
 ))
 
-model = TFDistilBertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
+model = TFDistilBertForSequenceClassification.from_pretrained('/opt/project/tmp/sentiment_custom_modelV5', num_labels=2)
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=10e-5)
 model.compile(optimizer=optimizer,
@@ -77,4 +77,4 @@ model.fit(train_dataset.shuffle(30).batch(16),
           epochs=100,
           batch_size=16,
           validation_data=val_dataset.shuffle(10).batch(16))
-model.save_pretrained("/opt/project/tmp/sentiment_custom_modelV5")
+model.save_pretrained("/opt/project/tmp/sentiment_custom_modelV6")

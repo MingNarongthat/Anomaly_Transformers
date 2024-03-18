@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import cv2
 import pandas as pd
+import numpy as np
 
 # Maskimg the image with the boxes
 def apply_masks_in_grid(image, focus, patch_grid, patch_width, patch_height):
@@ -31,10 +32,11 @@ for filename in os.listdir(images_path):
         # convert column 2 to float
         data[2] = data[2].astype(float)
         # sort the df[2] from highest to lowest
-        data = data.sort_values(by=[2], ascending=False).head(30)
-        # df = data[data[2] == data[2].max()]
+        df = data.sort_values(by=[2], ascending=False).head(4)
+        print(filename, ':', np.mean(df[2]),df[3])
+
         #sort df[1] from lowest to highest 10 rows
-        df = data.sort_values(by=[1], ascending=True).head(10)
+        # df = data.sort_values(by=[1], ascending=True).head(10)
         
         # if file name in exeriment_caption == filename: extract 
         original_image = cv2.imread(os.path.join(images_path, filename))
@@ -46,7 +48,7 @@ for filename in os.listdir(images_path):
         # loop excel file with the same image name
         for i in range(len(df)):
             masked_image = apply_masks_in_grid(original_image, eval(df.iloc[i][0]), patch_grid, patch_width, patch_height)
-            cv2.imwrite('/opt/project/tmp/Experiment_{}_{}.jpg'.format(filename.replace('.jpg', ''), i), masked_image)
+            cv2.imwrite('/opt/project/tmp/experiments/FigExperiment_{}_{}.jpg'.format(filename.replace('.jpg', ''), i), masked_image)
             
             
     
