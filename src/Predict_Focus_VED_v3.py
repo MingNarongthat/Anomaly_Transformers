@@ -94,8 +94,8 @@ class AnchorBoxPredictor(nn.Module):
         outatt1 = self.self_attention(out2)
         outatt2 = self.adaptive_pool(outatt1)
         outatt3 = self.conv1(outatt2)
-        outatt4 = self.sigmoid(outatt3)
-        outatt4 = (outatt4 > 0.5).float()
+        outatt44 = self.sigmoid(outatt3)
+        outatt4 = (outatt44 > 0.5).float()
         
         out3 = self.fc1(out2)
         out4 = self.fc2(out3)
@@ -109,7 +109,7 @@ class AnchorBoxPredictor(nn.Module):
         tw_th = self.tanh(tw_th)
         
         # return out
-        return torch.cat([tx_ty, tw_th], 1), outatt4
+        return torch.cat([tx_ty, tw_th], 1), outatt4, outatt3
 
 feature_chanel = 512
 patch_grid = 7
@@ -175,7 +175,7 @@ def apply_masks_and_save(image, boxes, focus):
     return masked_image
 
 all_data = []
-images_path = '/opt/project/dataset/Image/Manual masked/IROS/'
+images_path = '/opt/project/dataset/Image/IROS_Test/'
 print("Starting image processing...")
 # masked_image = original_image.copy()
 # Loop through all the files in the images folder
@@ -188,9 +188,12 @@ for filename in os.listdir(images_path):
         image = image.unsqueeze(0)
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
-            outputs, close_outputs = model(conv_features)  # Get the model outputs
+            outputs, close_outputs, attend = model(conv_features)  # Get the model outputs
             # print(outputs.shape)
             # print(close_outputs.shape)
+            attend_max = attend.max(dim=1)[0]  #find max of attend in second dimension
+            #find mean of attend in second dimension
+            
         # focus = close_outputs.reshape(patch_grid**k,1).tolist()
         focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         
@@ -229,6 +232,27 @@ for filename in os.listdir(images_path):
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
         # cv2.imwrite('/opt/project/tmp/TestAnchor10{}'.format(filename), masked_image)
+        
+        # plot heat map from attend_max overlay to original image with transparency 0.5 in the same size
+        # Get the size of the original image
+        width, height = image1.size
+
+        # Resize the heatmap to match the size of the original image
+        heatmap_resized = cv2.resize(attend_max[0].detach().numpy(), (width, height))
+
+        # Normalize the heatmap for visualization
+        heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
+
+        # Overlay the resized heatmap on the original image
+        fig, ax = plt.subplots(1)
+        ax.imshow(image1)
+        ax.imshow(heatmap_resized,interpolation='gaussian', cmap='jet', alpha=0.3)
+        plt.axis('off')
+        plt.show()
+        
+        
+        
+
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])

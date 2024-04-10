@@ -109,7 +109,7 @@ class AnchorBoxPredictor(nn.Module):
         tw_th = self.tanh(tw_th)
         
         # return out
-        return torch.cat([tx_ty, tw_th], 1), outatt4
+        return torch.cat([tx_ty, tw_th], 1), outatt4, outatt3
 
 feature_chanel = 512
 patch_grid = 7
@@ -201,7 +201,8 @@ for filename in os.listdir(images_path):
         image = image.unsqueeze(0).to(device)
         with torch.no_grad():
             conv_features = vgg16_model(image)  # Get features from VGG16
-            outputs, close_outputs = model(conv_features)  # Get the model outputs
+            outputs, close_outputs, attend = model(conv_features)  # Get the model outputs
+            attend_max = attend.max(dim=1)[0] 
         # focus = close_outputs.reshape(patch_grid**k,1).tolist()
         focus = close_outputs.reshape(patch_grid*patch_grid*k,1).tolist()
         
@@ -233,8 +234,24 @@ for filename in os.listdir(images_path):
                     anchor_boxes.append((x, y, w, h))
         # print(len(anchor_boxes))
         masked_image = apply_masks_and_save(original_image, anchor_boxes, focus)
-        print(focus)
-        cv2.imwrite('/opt/project/tmp/Masked{}'.format(filename), masked_image)
+        # print(focus)
+        # cv2.imwrite('/opt/project/tmp/MaskedNormal{}'.format(filename), masked_image)
+        
+        # Get the size of the original image
+        width, height = image1.size
+
+        # Resize the heatmap to match the size of the original image
+        heatmap_resized = cv2.resize(attend_max[0].detach().cpu().numpy(), (width, height))
+
+        # Normalize the heatmap for visualization
+        heatmap_resized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
+
+        # Overlay the resized heatmap on the original image
+        fig, ax = plt.subplots(1)
+        ax.imshow(image1)
+        ax.imshow(heatmap_resized,interpolation='gaussian', cmap='jet', alpha=0.3)
+        plt.axis('off')
+        plt.savefig('/opt/project/tmp/HeatmapLandslide{}'.format(filename))
 
         # Generate the caption for the image
         caption = tokenizer.decode(t.generate(feature_extractor(masked_image, return_tensors="pt").pixel_values)[0])
@@ -258,5 +275,5 @@ for filename in os.listdir(images_path):
         
 # save into xlsx file
 df_output = pd.DataFrame(all_data, columns=['Filename', 'Caption','Original'])
-df_output.to_excel('/opt/project/tmp/result_IROSTest_caption.xlsx', index=False)
+# df_output.to_excel('/opt/project/tmp/result_normalfiretest_caption.xlsx', index=False)
         

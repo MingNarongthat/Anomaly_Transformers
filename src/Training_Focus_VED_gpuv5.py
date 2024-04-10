@@ -151,7 +151,7 @@ def apply_masks_and_save(image, boxes, focus):
     return masked_image
 
 # Function to save the model =========================================================================================================
-def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240219.pth.tar"):
+def save_checkpoint(state, filename="/opt/project/tmp/best_checkpoint20240319.pth.tar"):
     print("=> Saving a new best")
     torch.save(state, filename)
 
@@ -161,7 +161,7 @@ best_loss = float('inf')
 feature_chanel = 512
 k = 3  # Number of anchor boxes
 patch_grid = 7
-num_epochs = 12
+num_epochs = 15
 # ==============================================================================================================================
 # Define the transformations to preprocess the image
 transform_pipeline = transforms.Compose([
@@ -171,7 +171,7 @@ transform_pipeline = transforms.Compose([
 ])
 
 # Data preparation ==============================================================================================================================
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # Use the fourth GPU
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # Use the fourth GPU
 # If there's a GPU available
 if torch.cuda.is_available():
     # Tell PyTorch to use the GPU.
@@ -215,7 +215,7 @@ model = AnchorBoxPredictor(feature_size=feature_chanel, num_anchors=k, patch_siz
 optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
 # Load the model
-checkpoint_path = "/opt/project/tmp/best_checkpoint20240202.pth.tar"
+checkpoint_path = "/opt/project/tmp/best_checkpoint20231224.pth.tar"
 checkpoint = torch.load(checkpoint_path)
 model.load_state_dict(checkpoint['state_dict'])
 
@@ -244,7 +244,7 @@ def caption_similarity_loss(generated_captions, true_captions):
     return loss.mean()
 
 
-def combined_custom_loss(generated_captions, original_captions, model, alpha=0.0, beta=1.0, gamma=1.0, theta=1.0):
+def combined_custom_loss(generated_captions, original_captions, model, alpha=1.0, beta=0.0, gamma=0.0, theta=0.0):
     # Caption Similarity Term
     caption_similarity = caption_similarity_loss(generated_captions, original_captions)
     
@@ -426,10 +426,10 @@ for epoch in range(num_epochs):
     end_time_str.append(end_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Save start and end time to a CSV file
-    csv_file = "/opt/project/tmp/training_logFocus25.csv"
+    csv_file = "/opt/project/tmp/training_logFocus26.csv"
     with open(csv_file, "a") as file:
         writer = csv.writer(file)
         writer.writerow(["Epoch", "Script Name", "Start Time", "End Time", "Avg Loss"])
         for epoch in range(len(start_time_str)):  # Iterate based on recorded times
-            writer.writerow([epoch, "trainingFocusgpu5lossinversecosineR1_lr0005_finetune3.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
+            writer.writerow([epoch, "trainingFocusgpu5fireflood_lr0005_finetune4.py", start_time_str[epoch], end_time_str[epoch], avg_loss])
             
