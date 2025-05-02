@@ -43,14 +43,16 @@ images_path = "/opt/project/dataset/DataAll/Training/"
 train_test_ratio = 0.1
 
 # Load the pre-trained image captioning model and tokenizer
-model = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
-# model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained\
-#                                     ("google/vit-base-patch16-224-in21k", 'bert-base-uncased', tie_encoder_decoder=True)
+# model = VisionEncoderDecoderModel.from_pretrained('/opt/project/tmp/Image_Cationing_VIT_classification_v1.2')
+model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained\
+                                    ("google/vit-base-patch16-224-in21k", 'bert-base-uncased', tie_encoder_decoder=True)
 feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
 
 # Read json file containing the image name and captioning
-with open("/opt/project/dataset/focus_caption_dataset_trainingfinetune_withclass_v3.json", 'r') as f:
+# with open("/opt/project/dataset/focus_caption_dataset_trainingfinetune_withclass_v3.json", 'r') as f:
+#     datastore = json.load(f)
+with open("/opt/project/dataset/caption_dataset_normal_v1.2.json", 'r') as f:
     datastore = json.load(f)
 
 # Preparing training and testing set
@@ -91,7 +93,7 @@ model.config.vocab_size = 30522  #  50265
 
 # set beam search parameters
 model.config.eos_token_id = tokenizer.sep_token_id
-model.config.max_length = 30
+model.config.max_length = 50
 model.config.early_stopping = True
 model.config.no_repeat_ngram_size = 3
 model.config.length_penalty = 2.0
@@ -118,17 +120,47 @@ class IAMDataset(Dataset):
         # get file name + text
         img_path = self.df['images'][idx]
         caption = self.df['captions'][idx]
+        
         # prepare image (i.e. resize + normalize)
         image = Image.open(img_path).convert("RGB")
         pixel_values = self.feature_extractor(image, return_tensors="pt").pixel_values
-        # add labels (input_ids) by encoding the text
-        labels = self.tokenizer(caption, truncation=True,
-                                padding="max_length",
-                                max_length=self.decoder_max_length).input_ids
-        # important: make sure that PAD tokens are ignored by the loss function
-        labels = [label if label != self.tokenizer.pad_token_id else -100 for label in labels]
+        
+        # Tokenize the caption
+        tokenized = self.tokenizer(
+            caption,
+            padding="max_length",
+            truncation=True,
+            max_length=self.decoder_max_length,
+            return_tensors="pt"
+        )
+        
+        # Get input_ids and create labels
+        input_ids = tokenized.input_ids.squeeze()
+        labels = input_ids.clone()
+        
+        # Create decoder input ids by shifting the labels to the right
+        decoder_input_ids = input_ids[:-1].clone()
+        decoder_input_ids = torch.cat([
+            torch.tensor([self.tokenizer.cls_token_id]),
+            decoder_input_ids
+        ])
+        
+        # Pad decoder_input_ids to match max_length
+        if len(decoder_input_ids) < self.decoder_max_length:
+            padding_length = self.decoder_max_length - len(decoder_input_ids)
+            decoder_input_ids = torch.cat([
+                decoder_input_ids,
+                torch.tensor([self.tokenizer.pad_token_id] * padding_length)
+            ])
+        
+        # Set padding tokens in labels to -100 to ignore them in loss
+        labels[labels == self.tokenizer.pad_token_id] = -100
 
-        encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
+        encoding = {
+            "pixel_values": pixel_values.squeeze(),
+            "labels": labels,
+            "decoder_input_ids": decoder_input_ids
+        }
         return encoding
 
 
@@ -163,9 +195,10 @@ training_args = TrainingArguments(
     logging_steps=1024,
     save_steps=2048,
     warmup_steps=1024,
-    num_train_epochs=30,  # TRAIN_EPOCHS
+    num_train_epochs=100,  # TRAIN_EPOCHS
     overwrite_output_dir=True,
     save_total_limit=1,
+    label_smoothing_factor=0.1,  # Add label smoothing to prevent overconfidence
 )
 
 # # instantiate trainer
@@ -191,5 +224,5 @@ csv_file = "/opt/project/tmp/training_log.csv"
 with open(csv_file, "a") as file:
     writer = csv.writer(file)
     writer.writerow(["Script Name", "Start Time", "End Time"])
-    writer.writerow(["VED_Training2.py", start_time_str, end_time_str])
+    writer.writerow(["VED_Training_Normal_v1.0.py", start_time_str, end_time_str])
 
